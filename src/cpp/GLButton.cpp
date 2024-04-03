@@ -89,20 +89,166 @@ void GLButton::Draw() {
 	glVertex3f(WorldPos[6], WorldPos[7], WorldPos[8]);
 	glVertex3f(WorldPos[9], WorldPos[10], WorldPos[11]);
 	glEnd();
+	
+	glPushMatrix();
+	glLoadIdentity();
+	//compute unit
+	GLdouble UnitPos[6];
+	gluUnProject(0, 0, 0.0f, modelview, projection, viewport, &UnitPos[0], &UnitPos[1], &UnitPos[2]);
+	gluUnProject(size, 0, 0.0f, modelview, projection, viewport, &UnitPos[3], &UnitPos[4], &UnitPos[5]);
+	float unit = sqrt((UnitPos[3] - UnitPos[0]) * (UnitPos[3] - UnitPos[0]) + (UnitPos[4] - UnitPos[1]) * (UnitPos[4] - UnitPos[1]));
+
+	if (LeftAlign) {
+		//move to WorldPos center
+		glTranslatef(WorldPos[0], (WorldPos[1] + WorldPos[4]) / 2, 0);
+	}
+	else {
+		//move to WorldPos left
+		glTranslatef((WorldPos[0] + WorldPos[9]) / 2, (WorldPos[1] + WorldPos[4]) / 2, 0);
+	}
+	
+	//scale to unit
+	glScalef(unit, unit, unit);
+	glTranslatef(0, 0, -0.5f);
+	//draw text
+
+	
+	if (LeftAlign) 
+		glTranslatef(XOffset, 0, 0);
+	else 
+		glTranslatef(-TextAreaW / 2, 0, 0);
+
+	size_t i = 0;
+	for (auto&x:text) {
+		glPushMatrix();
+		glTranslatef(TextPosX_L[i], TextPosY_L[i] - (YAlign ? TextCenterY[i] : YOffset), 0);
+		glColor4f(text_color[0], text_color[1], text_color[2], text_color[3]);
+		glCallList(_GLCharacterList.list[x]);
+		glPopMatrix();
+		i++;
+	}
+	glPopMatrix();
+
 	glDisable(GL_BLEND);
 	glPopMatrix();
 
 }
+
+void GLButton::GenText(wchar_t x) {
+	SelectObject(hDC, GLhFont);
+	int list = glGenLists(1);
+	_GLCharacterList.list[x] = list;
+	GLYPHMETRICSFLOAT  lpGLyphMetricsFloat;
+	wglUseFontOutlinesW(hDC, x, 1, list, 0.0f, 0.01f, WGL_FONT_POLYGONS, &lpGLyphMetricsFloat);
+	_GLCharacterList.width[x] = lpGLyphMetricsFloat.gmfBlackBoxX;
+	_GLCharacterList.height[x] = lpGLyphMetricsFloat.gmfBlackBoxY;
+	_GLCharacterList.dx[x] = lpGLyphMetricsFloat.gmfCellIncX;
+	_GLCharacterList.dy[x] = lpGLyphMetricsFloat.gmfCellIncY;
+	_GLCharacterList.cx[x] = lpGLyphMetricsFloat.gmfptGlyphOrigin.x - lpGLyphMetricsFloat.gmfBlackBoxX / 2;
+	_GLCharacterList.cy[x] = lpGLyphMetricsFloat.gmfptGlyphOrigin.y - lpGLyphMetricsFloat.gmfBlackBoxY / 2;
+}
+
 void GLButton::UpdateText(std::wstring text) {
 	this->text = text;
+	TextPosX.clear();
+	TextPosY.clear();
+	TextSizeW.clear();
+	TextCenterY.clear();
+	TextSizeH.clear();
+	TextPosX_L.clear();
+	TextPosY_L.clear();
+
+	
+	std::vector<float> linePosX{};
+	std::vector<float> linePosY{};
+	std::vector<float> lineSizeW{};
+
+	float CurrY = 0;
+	float CurrX = 0;
+	float Max_dy = 0;
+
+
+	if (_GLCharacterList.list.find(L' ') == _GLCharacterList.list.end())
+	{
+		GenText(L' ');
+	}
+
+
 	for (auto& x : text) {
-		if (_GLCharacterList.list.find(x)== _GLCharacterList.list.end())
+		if (_GLCharacterList.list.find(x) == _GLCharacterList.list.end())
 		{
-			SelectObject(hDC, GLhFont);
-			int list = glGenLists(1);
-			_GLCharacterList.list[x] = list;
-			//LPGLYPHMETRICSFLOAT  lpGLyphMetricsFloat;
-			wglUseFontOutlinesW(hDC, x, 1, list, 0.0f, 0.2f, WGL_FONT_POLYGONS, NULL);
+			switch (x)
+			{
+			case L'\n':
+			case L'\t':
+				_GLCharacterList.list[x] = -1;
+				break;
+			default:
+				GenText(x);
+				break;
+			}
+		}
+		TextCenterY.push_back(_GLCharacterList.cy[x]);
+		switch (x)
+		{
+		case L'\n':
+			linePosX.push_back(CurrX);
+			linePosY.push_back(CurrY);
+			lineSizeW.push_back(0);
+			TextPosX.push_back(linePosX);
+			TextPosY.push_back(linePosY);
+			TextPosX_L.insert(TextPosX_L.end(), linePosX.begin(), linePosX.end());
+			TextPosY_L.insert(TextPosY_L.end(), linePosY.begin(), linePosY.end());
+			TextSizeW.push_back(lineSizeW);
+			TextSizeH.push_back(Max_dy);
+			linePosX.clear();
+			linePosY.clear();
+			lineSizeW.clear();
+			CurrY -= Max_dy + LineSpace;
+			CurrX = 0;
+			Max_dy = 0;
+			break;
+		case L'\t':
+			linePosX.push_back(CurrX);
+			linePosY.push_back(CurrY);
+			CurrX += _GLCharacterList.dx[L' '] * TabSize;
+			if (_GLCharacterList.height[L' '] > Max_dy) Max_dy = _GLCharacterList.height[L' '];
+			lineSizeW.push_back(_GLCharacterList.dx[L' '] * TabSize);
+			break;
+		default:
+			linePosX.push_back(CurrX);
+			linePosY.push_back(CurrY);
+			CurrX += _GLCharacterList.dx[x];
+			if (_GLCharacterList.height[x] > Max_dy) Max_dy = _GLCharacterList.height[x];
+			lineSizeW.push_back(_GLCharacterList.dx[x]);
+			break;
+		}		
+	}
+	linePosX.push_back(CurrX);
+	linePosY.push_back(CurrY);
+	lineSizeW.push_back(0);
+	TextPosX.push_back(linePosX);
+	TextPosY.push_back(linePosY);
+	TextPosX_L.insert(TextPosX_L.end(), linePosX.begin(), linePosX.end());
+	TextPosY_L.insert(TextPosY_L.end(), linePosY.begin(), linePosY.end());
+	TextSizeW.push_back(lineSizeW);
+	TextSizeH.push_back(Max_dy);
+
+	//compute TextArea
+	float W{}, H{};
+	for (size_t i{}; i < TextPosX.size(); i++) {
+		if (TextPosX[i].size()) {
+			float W0 = TextPosX[i][TextPosX[i].size() - 1] + TextSizeW[i][TextPosX[i].size() - 1];
+			if (W0 > W) {
+				W = W0;
+			}
 		}
 	}
+	H = CurrY + Max_dy;
+	
+	TextAreaH = H;
+	TextAreaW = W;
 }
+	
+
+

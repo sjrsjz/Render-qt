@@ -121,6 +121,7 @@
   <ItemGroup>
     <ClInclude Include="src\header\Common.h" />
     <ClInclude Include="src\header\GLButton.h" />
+    <ClInclude Include="src\header\UIEffect.h" />
     <QtMoc Include="src\header\MainOpenGLWidget.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

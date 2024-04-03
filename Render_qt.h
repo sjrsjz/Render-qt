@@ -5,9 +5,13 @@
 #include <QtCore/QByteArray>
 #include <QtCore/qtimer.h>
 #include <QtGui/qevent.h>
+#include <QtGui/qpainter.h>
+#include <QtWidgets/qgraphicseffect.h>
+#include <QtWidgets/qgridlayout.h>
 #include "ui_Render_qt.h"
 #include "src/header/Common.h"
 #include "src/header/GLButton.h"
+#include "src/header/UIEffect.h"
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <WinUser.h>
@@ -22,6 +26,9 @@
 #endif
 
 extern GLButton Main_Exit;
+extern GLButton Main_Minimize;
+extern GLButton Main_Maximize;
+extern GLButton Main_TitleBar;
 extern int Cursor_X;
 extern int Cursor_Y;
 
@@ -36,7 +43,12 @@ public:
     bool event(QEvent* e);
     void resizeEvent(QResizeEvent* e);
     void mouseReleaseEvent(QMouseEvent* event);
+    void mouseMoveEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event);
+    void mouseDoubleClickEvent(QMouseEvent* event);
     void updateGLUI();
+    void paintEvent(QPaintEvent* e);
+    bool nativeEvent(const QByteArray& eventType, void* message, long* result);
 private:
     Ui::Render_qtClass ui;
 };

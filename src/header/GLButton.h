@@ -3,6 +3,24 @@
 
 
 class GLButton {
+private:
+	float TextAreaW{};
+	float TextAreaH{};
+	unsigned int TabSize = 4;
+	float LineSpace=0.5;
+	std::vector<std::vector<float>> TextPosX{};
+	std::vector<std::vector<float>> TextPosY{};
+
+	std::vector<float> TextPosX_L{};
+	std::vector<float> TextPosY_L{};
+
+	std::vector<float> TextCenterY{};
+
+
+	std::vector<std::vector<float>> TextSizeW{};
+	std::vector<float> TextSizeH{};
+
+	void GenText(wchar_t c);
 public:
 	QOpenGLContext* context{};
 	
@@ -12,6 +30,10 @@ public:
 	float text_color[4];
 	float background_color[4];
 	bool visible = true;
+	bool LeftAlign = false;
+	bool YAlign = false;
+	float YOffset = 0.275;
+	float XOffset = 0.275;
 	HDC hDC{};
 	GLButton();
 	~GLButton();

@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "GLButton.h"
 #include <QtGui/QResizeEvent>
-
+#include <QtGui/qpainter.h>
 
 // 2.ºÃ≥–œ‡πÿ¿‡
 class MainOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Compatibility
