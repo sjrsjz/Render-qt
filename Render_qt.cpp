@@ -12,19 +12,21 @@ Render_qt::Render_qt(QWidget *parent)
     setWindowFlags(
         Qt::FramelessWindowHint | Qt::Window | Qt::WindowMinimizeButtonHint
     );
-    //setAttribute(Qt::WA_TranslucentBackground);
-
+    
+    setAttribute(Qt::WA_TranslucentBackground);
 //    SetWindowLongPtr(HWND(winId()), GWL_STYLE, WS_POPUP | WS_CAPTION | WS_SIZEBOX);
     //WindowStyle = GetWindowLongPtr(HWND(winId()), GWL_STYLE);
     //把client区域扩展到标题栏上和边框上，只留1个像素的余量
-    const MARGINS shadow = { 10, 10, 10, 10 };
+    const MARGINS shadow = { 1, 1, 1, 1 };
     DwmExtendFrameIntoClientArea(HWND(winId()), &shadow);
     
+
+    setAttribute(Qt::WA_TranslucentBackground);
 
     ui.openGLWidget->setGeometry(1, 1, width() - 2, height() - 2);
 
 
-    RenderTimer.setInterval(1000 / 240);
+    RenderTimer.setInterval(1000 / 60);
     RenderTimer.start();
     connect(&RenderTimer, &QTimer::timeout, [=]() {
         updateGLUI();
@@ -68,7 +70,7 @@ Render_qt::Render_qt(QWidget *parent)
     Main_TitleBar.background_color[1] = 50.0/255;
     Main_TitleBar.background_color[2] = 60.0/255;
     Main_TitleBar.background_color[3] = 0.5;
-    Main_TitleBar.size = 40.0f;
+    Main_TitleBar.size = 35.0f;
 
 }
 Render_qt::~Render_qt()
@@ -104,7 +106,12 @@ int DragStartH = 0;
 
 void Render_qt::paintEvent(QPaintEvent* e)
 {
-    
+    QPainter p(this);
+    //边框黑色不透明 （因为设置了窗体无边框，这行代码可能没有效果）
+    p.setPen(QColor(0, 255, 0, 255));
+    p.setBrush(QColor(255, 0, 0, 150));//填充红色半透明
+    p.drawRect(0, 0, width(), height());
+    QWidget::paintEvent(e);
 }
 
 
@@ -112,25 +119,23 @@ void Render_qt::updateGLUI() {
     ui.openGLWidget->update();
     Cursor_X = this->mapFromGlobal(QCursor().pos()).x();
     Cursor_Y = ui.centralWidget->height() - this->mapFromGlobal(QCursor().pos()).y();
-
+    DWORD tick = GetTickCount();
     MouseInTitleBar = Cursor_Y > ui.centralWidget->height() - Main_Exit.rect.h && Cursor_Y <= ui.centralWidget->height() - BorderThickness && Cursor_X > BorderThickness && Cursor_X < ui.centralWidget->width() - BorderThickness;
     if (MouseInTitleBar && !lMouseInTitleBar) {
-        TitleBarMove.NewEndPositon(ui.openGLWidget->height() - Main_Exit.rect.h, GetTickCount());
+        TitleBarMove.NewEndPositon(ui.openGLWidget->height() - Main_Exit.rect.h, tick);
     }
     else if (!MouseInTitleBar && lMouseInTitleBar) {
-        TitleBarMove.NewEndPositon(ui.openGLWidget->height(), GetTickCount());
+        TitleBarMove.NewEndPositon(ui.openGLWidget->height(), tick);
     }
 
     if (MouseInTitleBar) {
         TitleBarMove.SetTotalDuration(100);
-        SetCursor(LoadCursor(NULL, IDC_HAND));
     }
     else {
         TitleBarMove.SetTotalDuration(500);
-        SetCursor(LoadCursor(NULL, IDC_ARROW));
     }
 
-    TitleBarMove.Update(GetTickCount());
+    TitleBarMove.Update(tick);
     Main_Exit.rect.y = TitleBarMove.X();
     Main_Maximize.rect.y = TitleBarMove.X();
     Main_Minimize.rect.y = TitleBarMove.X();
@@ -296,7 +301,6 @@ void Render_qt::mouseReleaseEvent(QMouseEvent* e) {
         auto y = ui.centralWidget->height() - e->y();
         
         if (Main_Exit.TestClick(x, y)) {
-            MessageBoxW(0, L"Click", L"Click", 0);
             this->close();
         }
         else if (Main_Maximize.TestClick(x, y)) {

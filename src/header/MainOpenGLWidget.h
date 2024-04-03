@@ -11,6 +11,10 @@ class MainOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_3_3_Compatibilit
 public:
     explicit MainOpenGLWidget(QWidget* parent = nullptr);
 
+private:
+    void DrawBorder();
+    void PaintUI();
+    void DrawScene();
 protected:
     // 3.重载相关虚函数
     virtual void initializeGL();
