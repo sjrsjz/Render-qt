@@ -6,6 +6,7 @@
 #include <QtCore/qtimer.h>
 #include <QtGui/qevent.h>
 #include <QtGui/qpainter.h>
+#include <QtWidgets/QGraphicsDropShadowEffect> 
 #include <QtWidgets/qgraphicseffect.h>
 #include <QtWidgets/qgridlayout.h>
 #include "ui_Render_qt.h"

@@ -3,12 +3,16 @@
 #include <unordered_map>
 #include <Windows.h>
 #include <string>
+#include <iostream>	
 
 #include <QtWidgets/qopenglwidget.h>
 #include <QtGui/qopenglfunctions_3_3_compatibility.h>
 #include <QtGui/qopenglextrafunctions.h>
 #include <QtWidgets/qapplication.h>
 #include <gl/GLU.h>
+#include <QtOpenGL/qglbuffer.h>
+#include <QtOpenGLExtensions/qopenglextensions.h>
+#include <QtGui/qopenglfunctions_4_5_compatibility.h>
 
 struct GLRECT
 {

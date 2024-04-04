@@ -112,6 +112,7 @@
     <ClCompile Include="src\cpp\GLButton.cpp" />
     <ClCompile Include="src\cpp\GL_UI.cpp" />
     <ClCompile Include="src\cpp\MainOpenGLWidget.cpp" />
+    <ClCompile Include="src\cpp\shader.cpp" />
     <QtRcc Include="Render_qt.qrc" />
     <QtUic Include="Render_qt.ui" />
     <QtMoc Include="Render_qt.h" />
@@ -121,6 +122,7 @@
   <ItemGroup>
     <ClInclude Include="src\header\Common.h" />
     <ClInclude Include="src\header\GLButton.h" />
+    <ClInclude Include="src\header\shader.h" />
     <ClInclude Include="src\header\UIEffect.h" />
     <QtMoc Include="src\header\MainOpenGLWidget.h" />
   </ItemGroup>

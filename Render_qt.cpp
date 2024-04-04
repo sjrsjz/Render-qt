@@ -14,14 +14,6 @@ Render_qt::Render_qt(QWidget *parent)
     );
     
     setAttribute(Qt::WA_TranslucentBackground);
-//    SetWindowLongPtr(HWND(winId()), GWL_STYLE, WS_POPUP | WS_CAPTION | WS_SIZEBOX);
-    //WindowStyle = GetWindowLongPtr(HWND(winId()), GWL_STYLE);
-    //把client区域扩展到标题栏上和边框上，只留1个像素的余量
-    const MARGINS shadow = { 1, 1, 1, 1 };
-    DwmExtendFrameIntoClientArea(HWND(winId()), &shadow);
-    
-
-    setAttribute(Qt::WA_TranslucentBackground);
 
     ui.openGLWidget->setGeometry(1, 1, width() - 2, height() - 2);
 
@@ -106,12 +98,7 @@ int DragStartH = 0;
 
 void Render_qt::paintEvent(QPaintEvent* e)
 {
-    QPainter p(this);
-    //边框黑色不透明 （因为设置了窗体无边框，这行代码可能没有效果）
-    p.setPen(QColor(0, 255, 0, 255));
-    p.setBrush(QColor(255, 0, 0, 150));//填充红色半透明
-    p.drawRect(0, 0, width(), height());
-    QWidget::paintEvent(e);
+
 }
 
 

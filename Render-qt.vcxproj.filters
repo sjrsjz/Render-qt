@@ -52,6 +52,9 @@
     <ClCompile Include="src\cpp\GL_UI.cpp">
       <Filter>Source Files\GL</Filter>
     </ClCompile>
+    <ClCompile Include="src\cpp\shader.cpp">
+      <Filter>Source Files\GL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\header\GLButton.h">
@@ -61,6 +64,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\header\UIEffect.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\header\shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
