@@ -91,6 +91,7 @@ MainOpenGLWidget::MainOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 }
 void infoCallback(const wchar_t* e) {
 	DebugOutput(e);
+	std::wcout << e << std::endl;
 }
 void MainOpenGLWidget::initializeGL()
 {
@@ -144,7 +145,7 @@ void MainOpenGLWidget::initializeGL()
 	renderSystem.shader.init();
 
 	renderSystem.info_callback = infoCallback;
-	renderSystem.build(L"E:\\Render v2.0.0\\project\\2D\\main.gcw");
+	renderSystem.build(L"D:\\VS Projects\\Render-qt\\example\\2D\\main.gcw");
 }
 void MainOpenGLWidget::resizeGL(int w, int h)
 {

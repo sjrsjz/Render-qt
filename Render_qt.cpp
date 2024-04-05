@@ -13,6 +13,11 @@ RenderSystem renderSystem;
 Render_qt::Render_qt(QWidget *parent)
     : QMainWindow(parent, Qt::FramelessWindowHint | Qt::Window | Qt::WindowMinimizeButtonHint)
 {
+    //AllocConsole();
+    LOCALE_WCOUT
+
+    //_wfreopen(L"CONOUT$", L"w+t", stdout);
+
     ui.setupUi(this);
 
     setWindowFlags(

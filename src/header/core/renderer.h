@@ -215,4 +215,5 @@ public:
 	void info(const wchar_t* info);
 	std::wstring getShaderWithoutInclude(std::wstring cs, std::unordered_set<std::wstring>& map);
 	static unsigned int functions(unsigned int this_, const wchar_t* func);
+	static unsigned int callbacks(unsigned int this_, const wchar_t* name, const wchar_t* func);
 };

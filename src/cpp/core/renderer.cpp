@@ -122,12 +122,19 @@ bool RenderSystem::build(std::wstring ProjectFile) {
 	lstring src = readFileString(project.MLang_file);
 	src = 
 		L"Class:_RenderSystem_{"
-		"Public N:_this_;" 
-		"Public N:functions;" 
-		"_init_()->N:={"
-		"functions=" + std::to_wstring((unsigned int)&functions) + L";"
-		"_this_=" + std::to_wstring((unsigned int)this) + L";"
-		"}}\n"
+		"	Public N:_this_;" 
+		"	Public N:functions;" 
+		"	Public N:callbacks;"
+		"	_init_()->N:={"
+		"		functions=" + std::to_wstring((unsigned int)&functions) + L";"
+		"		callbacks=" + std::to_wstring((unsigned int)&callbacks) + L";"
+		"		_this_=" + std::to_wstring((unsigned int)this) + L";"
+		"	}"
+		"	Transit \"\" _getFunction(N:this_,N:name)->N:={return(functions)}"
+		"	Transit \"\" _setCallback(N:this_,N:name,N:func)->N:={return(callbacks)}"
+		"	Public getFunction(N:name)->N:={return(_getFunction(_this_,name))}"
+		"	Public setCallback(N:name,N:func)->N:={return(_setCallback(_this_,name,func))}"
+		"}\n"
 		+ src;
 	bool err = lex.analyze(src);
 	AST ast{};
@@ -421,6 +428,11 @@ std::wstring RenderSystem::getShaderWithoutInclude(std::wstring cs, std::unorder
 
 
 unsigned int RenderSystem::functions(unsigned int this_, const wchar_t* func) {
+	RenderSystem* _this = (RenderSystem*)this_;
+	return 0;
+}
+
+unsigned int RenderSystem::callbacks(unsigned int this_, const wchar_t* name, const wchar_t* func) {
 	RenderSystem* _this = (RenderSystem*)this_;
 	return 0;
 }
