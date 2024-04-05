@@ -6,6 +6,9 @@ extern GLButton Main_Minimize;
 extern GLButton Main_Maximize;
 extern GLButton Main_TitleBar;
 
+extern RenderSystem renderSystem;
+
+
 void __stdcall GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
 	OutputDebugStringA(message);
 	OutputDebugStringA("\n");
@@ -86,6 +89,9 @@ MainOpenGLWidget::MainOpenGLWidget(QWidget* parent) : QOpenGLWidget(parent)
 	surfaceFormat.setSamples(4);//多重采样
 	setFormat(surfaceFormat); //setFormat是QOpenGLWidget的函数
 }
+void infoCallback(const wchar_t* e) {
+	DebugOutput(e);
+}
 void MainOpenGLWidget::initializeGL()
 {
 	WorkerW_Hwnd = GetWorkerW();
@@ -123,7 +129,6 @@ void MainOpenGLWidget::initializeGL()
 
 	shader.gl = context->functions();
 	shader.init();
-	bool a=shader.ex.d_func()->initialized;
 	QRect rect = QGuiApplication::primaryScreen()->geometry();
 	context->functions()->glGenBuffers(1, &DesktopPBO_write);
 	context->functions()->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, DesktopPBO_write);
@@ -133,6 +138,13 @@ void MainOpenGLWidget::initializeGL()
 	DesktopImageTex = shader.Create2DImageTex32F(rect.width(), rect.height());
 	DesktopImageTex_Swap = shader.Create2DImageTex32F(rect.width(), rect.height());
 	GaussianBlurProgram = shader.CompileComputeShader(gaussian_blur_compute_shader, &GaussianBlurComputeShader);
+
+	renderSystem.gl.initializeOpenGLFunctions();
+	renderSystem.shader.gl = context->functions();
+	renderSystem.shader.init();
+
+	renderSystem.info_callback = infoCallback;
+	renderSystem.build(L"E:\\Render v2.0.0\\project\\2D\\main.gcw");
 }
 void MainOpenGLWidget::resizeGL(int w, int h)
 {

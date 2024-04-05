@@ -4,6 +4,12 @@ static QTimer RenderTimer;
 
 long WindowStyle = 0;
 
+lstring workPath{};
+lstring MLangError{};
+
+RenderSystem renderSystem;
+
+
 Render_qt::Render_qt(QWidget *parent)
     : QMainWindow(parent, Qt::FramelessWindowHint | Qt::Window | Qt::WindowMinimizeButtonHint)
 {

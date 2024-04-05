@@ -1,11 +1,9 @@
 #pragma once
 #include "../Common.h"
 #include "../shader.h"
-#define _IN_MAIN_
 #include "precompile.h"
-#undef _IN_MAIN_
 #include <unordered_set>
-
+using namespace MLang;
 
 struct vec4
 {
@@ -40,8 +38,61 @@ public:
 		file = L"";
 	}
 	~texture() {
-		release();
 	}
+};
+
+class GLImage {
+	GLuint type{};
+	GLuint tex{};
+	Shader* shader{};
+	GLuint width{};
+	GLuint height{};
+	GLuint depth{};
+	GLuint binding{};
+	public:
+		GLImage(Shader* s) {
+			shader = s;
+		}
+		void release() {
+			if (tex) {
+				glDeleteTextures(1, &tex);
+				tex = 0;
+			}
+			width = 0;
+			height = 0;
+			depth = 0;
+		}
+		void create1D(unsigned int w) {
+			release();
+			type = GL_TEXTURE_1D;
+			width = w;
+			tex = shader->Create1DImageTex32F(width);
+		}
+		void create2D(unsigned int w, unsigned int h) {
+			release();
+			type = GL_TEXTURE_2D;
+			width = w;
+			height = h;
+			tex = shader->Create2DImageTex32F(width, height);
+		}
+		void create3D(unsigned int w, unsigned int h, unsigned int d) {
+			release();
+			type = GL_TEXTURE_3D;
+			width = w;
+			height = h;
+			depth = d;
+			tex = shader->Create3DImageTex32F(width, height, depth);
+		}
+		void bindTex() {
+			glBindTexture(type, tex);
+		}
+		void bindImage() {
+			shader->ex.glBindImageTexture(binding, tex, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
+		}
+		void setBinding(GLuint b) {
+			binding = b;
+		}
+		~GLImage() {}
 };
 
 class RenderSystem
@@ -58,8 +109,15 @@ public:
 		INT,
 		COLOR3,
 		COLOR4,
+		TEXTURE1D,
+		TEXTURE2D,
+		TEXTURE3D,
+		IMAGE1D,
+		IMAGE2D,
+		IMAGE3D,
 	};
-	struct var {
+	class var {
+	public:
 		union {
 			vec4 data_4;
 			vec3 data_3;
@@ -71,8 +129,11 @@ public:
 			float data_matrix4x4[16];
 			vec4 data_color4;
 			vec3 data_color3;
+			texture data_tex;
+			GLImage data_image;
 		};
 		VarType type;
+		std::wstring name;
 		union {
 			vec4 default_4;
 			vec3 default_3;
@@ -84,7 +145,42 @@ public:
 			float default_matrix4x4[16];
 			vec4 default_color4;
 			vec3 default_color3;
+			texture default_tex;
+			GLImage default_image;
 		};
+		var() {
+			memset(this, 0, sizeof(var));
+		
+		}
+		~var() {}
+		void release() {
+			if (type == TEXTURE1D || type == TEXTURE2D || type == TEXTURE3D) {
+				data_tex.release();
+			}
+			if (type == IMAGE1D || type == IMAGE2D || type == IMAGE3D) {
+				data_image.release();
+			}
+		
+		}
+		void operator=(const var& v) {
+			memcpy(this, &v, sizeof(var));
+			if (type == TEXTURE1D || type == TEXTURE2D || type == TEXTURE3D) {
+				data_tex = v.data_tex;
+			}
+			if (type == IMAGE1D || type == IMAGE2D || type == IMAGE3D) {
+				data_image = v.data_image;
+			}
+		}
+		var(const var& v) {
+			memcpy(this, &v, sizeof(var));
+			if (type == TEXTURE1D || type == TEXTURE2D || type == TEXTURE3D) {
+				data_tex = v.data_tex;
+			}
+			if (type == IMAGE1D || type == IMAGE2D || type == IMAGE3D) {
+				data_image = v.data_image;
+			}
+		}
+
 	};
 	struct Project {
 		std::wstring MLang_file{};
@@ -106,7 +202,9 @@ private:
 	std::vector<var> vars;
 	std::vector<int> ComputeShaders;
 	std::vector<int> ComputePrograms;
+	x86Runner runner{};
 public:
+	unsigned int computeShader_workgroup_size = 16;
 	bool build(std::wstring ProjectFile);
 	void enterUpdate();
 	void update();

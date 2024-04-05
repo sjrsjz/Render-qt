@@ -4,10 +4,11 @@
 #include <QtGui/QResizeEvent>
 #include <QtGui/qpainter.h>
 #include <QtGui/qscreen.h>
-
+#include "core/renderer.h"
 #include "shader.h"
 
-// 2.继承相关类
+
+
 class MainOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Compatibility
 {
     Q_OBJECT
@@ -79,7 +80,6 @@ private:
 	void CaptureScreen( GLuint PBO, int width, int height, GLuint Tex);
 	~MainOpenGLWidget();
 protected:
-    // 3.重载相关虚函数
     virtual void initializeGL();
     virtual void resizeGL(int w, int h);
     virtual void paintGL();

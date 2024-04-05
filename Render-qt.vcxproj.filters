@@ -106,6 +106,9 @@
     <ClCompile Include="..\M Lang\cpp\x86.cpp">
       <Filter>MLang\cpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\precompile.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\header\GLButton.h">

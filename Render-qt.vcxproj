@@ -118,6 +118,7 @@
     <ClCompile Include="..\M Lang\cpp\Common.cpp" />
     <ClCompile Include="..\M Lang\cpp\IRGenerator.cpp" />
     <ClCompile Include="..\M Lang\cpp\Lexer.cpp" />
+    <ClCompile Include="..\M Lang\cpp\precompile.cpp" />
     <ClCompile Include="..\M Lang\cpp\SectionManager.cpp" />
     <ClCompile Include="..\M Lang\cpp\vm.cpp" />
     <ClCompile Include="..\M Lang\cpp\x64.cpp" />
