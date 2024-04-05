@@ -24,6 +24,21 @@
     <Filter Include="Source Files\GL">
       <UniqueIdentifier>{40c49444-72a7-4598-8003-e0e429a3502b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\core">
+      <UniqueIdentifier>{6f48e8a2-316b-45dd-a001-713cbccd9891}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\core">
+      <UniqueIdentifier>{9530263a-e6b0-405d-932c-2748db9d76e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MLang">
+      <UniqueIdentifier>{1c022559-1160-4c1c-a5a0-042b9d88b939}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MLang\cpp">
+      <UniqueIdentifier>{7c9147fb-956c-4f31-ba66-ae7592608438}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MLang\header">
+      <UniqueIdentifier>{a4e3c1aa-3e32-4161-b0bf-e266bfe8b4cb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="Render_qt.qrc">
@@ -55,6 +70,42 @@
     <ClCompile Include="src\cpp\shader.cpp">
       <Filter>Source Files\GL</Filter>
     </ClCompile>
+    <ClCompile Include="src\cpp\core\renderer.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\AST.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\base64.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\ByteArray.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\caller.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\Common.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\IRGenerator.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\Lexer.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\SectionManager.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\vm.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\x64.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\M Lang\cpp\x86.cpp">
+      <Filter>MLang\cpp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\header\GLButton.h">
@@ -68,6 +119,51 @@
     </ClInclude>
     <ClInclude Include="src\header\shader.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\header\core\renderer.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\AST.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\base64.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\ByteArray.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\caller.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\Common.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\IRGenerator.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\Lexer.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\precompile.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\SectionManager.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\Struct.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\Tree.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\vm.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\x64.h">
+      <Filter>MLang\header</Filter>
+    </ClInclude>
+    <ClInclude Include="..\M Lang\header\x86.h">
+      <Filter>MLang\header</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

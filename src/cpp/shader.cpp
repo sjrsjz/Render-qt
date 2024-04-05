@@ -84,6 +84,32 @@ int Shader::CompileComputeShader(const char* compute_shader_text, GLuint* comput
 	return err ? -1 : program;
 
 }
+
+int Shader::CompileComputeShader(const char* compute_shader_text, GLuint* compute_shader, char* errbuf) {
+	int program; bool err = false;
+	if (compute_shader_text == nullptr) return -1;
+
+	if (compute_shader_text != nullptr) {
+		*compute_shader = gl->glCreateShader(GL_COMPUTE_SHADER);
+		gl->glShaderSource(*compute_shader, 1, &compute_shader_text, NULL);
+		gl->glCompileShader(*compute_shader);
+		GLint a = false;
+		gl->glGetShaderiv(*compute_shader, 0x8B81, &a);
+		if (!a)
+		{
+			int err_size;
+			gl->glGetShaderInfoLog(*compute_shader, 2047, &err_size, errbuf);
+			err |= true;
+			OutputDebugStringA(errbuf);
+		}
+	}
+	program = gl->glCreateProgram();
+	gl->glAttachShader(program, *compute_shader);
+	gl->glLinkProgram(program);
+	return err ? -1 : program;
+
+}
+
 int Shader::Create1DImageTex32F(int width) {
 	GLuint tex;
 	gl->glGenTextures(1, &tex);
