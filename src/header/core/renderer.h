@@ -185,6 +185,7 @@ public:
 	struct Project {
 		std::wstring MLang_file{};
 		std::vector<std::wstring> Shaders{};
+		std::vector<std::wstring> ShaderName{};
 		std::wstring Var_file{};
 	} project;
 	double time{};
@@ -198,22 +199,46 @@ public:
 	QOpenGLFunctions_4_5_Compatibility gl{};
 	Shader shader{};
 	void (*info_callback)(const wchar_t* info) {};
+	void (*frameStart) () = nullptr;
+	unsigned int (*frameEnd) () = nullptr;
+	bool (*frameUpdate) () = nullptr;
+	void (*programStart) () = nullptr;
+	void (*programEnd) () = nullptr;
+	void (*varUpdate) (const wchar_t* name) = nullptr;
 private:
 	std::vector<var> vars;
 	std::vector<int> ComputeShaders;
 	std::vector<int> ComputePrograms;
+	std::vector<std::wstring> ComputeShadersName;
 	x86Runner runner{};
 public:
 	unsigned int computeShader_workgroup_size = 16;
 	bool build(std::wstring ProjectFile);
 	void enterUpdate();
 	void update();
-	void leaveUpdate();
+	unsigned int leaveUpdate();
 	void create();
 	void release();
 	void reset();
 	void info(const wchar_t* info);
+	bool Error{};
 	std::wstring getShaderWithoutInclude(std::wstring cs, std::unordered_set<std::wstring>& map);
-	static unsigned int functions(unsigned int this_, const wchar_t* func);
-	static unsigned int callbacks(unsigned int this_, const wchar_t* name, const wchar_t* func);
+	static unsigned int _stdcall functions(unsigned int this_, const wchar_t* func);
+	static void _stdcall callbacks(unsigned int this_, const wchar_t* name, const wchar_t* func);
+	static unsigned int _stdcall image1D(unsigned int this_, unsigned int width);
+	static unsigned int _stdcall image2D(unsigned int this_, unsigned int width, unsigned int height);
+	static unsigned int _stdcall image3D(unsigned int this_, unsigned int width, unsigned int height, unsigned int depth);
+	static void _stdcall bindImage(unsigned int this_, unsigned int img, unsigned int binding);
+	static void _stdcall bindTex(unsigned int this_, unsigned int tex , unsigned int dim);
+	static void _stdcall releaseImage(unsigned int this_, unsigned int img);
+	static void _stdcall uniform1f(unsigned int this_, unsigned int program, const wchar_t* name, float value);
+	static void _stdcall uniform1i(unsigned int this_, unsigned int program, const wchar_t* name, int value);
+	static void _stdcall uniform2f(unsigned int this_, unsigned int program, const wchar_t* name, float x, float y);
+	static void _stdcall uniform3f(unsigned int this_, unsigned int program, const wchar_t* name, float x, float y, float z);
+	static void _stdcall uniform4f(unsigned int this_, unsigned int program, const wchar_t* name, float x, float y, float z, float w);
+	static void _stdcall uniformMatrix2x2f(unsigned int this_, unsigned int program, const wchar_t* name, double* value);
+	static void _stdcall uniformMatrix3x3f(unsigned int this_, unsigned int program, const wchar_t* name, double* value);
+	static void _stdcall uniformMatrix4x4f(unsigned int this_, unsigned int program, const wchar_t* name, double* value);
+	static void _stdcall compute(unsigned int this_, unsigned int program, unsigned int width, unsigned int height, unsigned int depth);
+	static void _stdcall bindProgram(unsigned int this_, unsigned int program);
 };
