@@ -146,6 +146,8 @@ void MainOpenGLWidget::initializeGL()
 
 	renderSystem.info_callback = infoCallback;
 	renderSystem.build(L"D:\\VS Projects\\Render-qt\\example\\2D\\main.gcw");
+
+	renderSystem.create();
 }
 void MainOpenGLWidget::resizeGL(int w, int h)
 {
@@ -250,24 +252,37 @@ void MainOpenGLWidget::PaintUI() {
 }
 
 void MainOpenGLWidget::DrawScene() {
-	//draw a rotating triangle
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glDepthFunc(GL_LEQUAL);
-	glPushMatrix();
-	glRotatef(GetTickCount()/10.0, 0.0f, 0.0f, 1.0f);
-	glBegin(GL_TRIANGLES);
-	glColor3f(1.0f, 0.0f, 0.0f);
-	glVertex3f(-0.5f, -0.5f, 0.0f);
-	glColor3f(0.0f, 1.0f, 0.0f);
-	glVertex3f(0.5f, -0.5f, 0.0f);
-	glColor3f(0.0f, 0.0f, 1.0f);
-	glVertex3f(0.0f, 0.5f, 0.0f);
-	glEnd();
-	glPopMatrix();
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_BLEND);
+	if (renderSystem.Error) return;
+	renderSystem.enterUpdate();
+	renderSystem.update();
+	DrawFullWindowTexture(renderSystem.leaveUpdate());
+
 }	
+
+void MainOpenGLWidget::DrawFullWindowTexture(GLuint Tex) {
+	//scale tex and draw it to full window
+	glPushMatrix();
+	glLoadIdentity();
+	glTranslatef(0, 0, -0.1);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBindTexture(GL_TEXTURE_2D, Tex);
+	glBegin(GL_QUADS);
+	float scale = double(height()) / width();
+	glColor4f(1, 1, 1, 1);
+	glTexCoord2f(0, 0);
+	glVertex3f(-1, -scale, 0);
+	glTexCoord2f(1, 0);
+	glVertex3f(1, -scale, 0);
+	glTexCoord2f(1, 1);
+	glVertex3f(1, scale, 0);
+	glTexCoord2f(0, 1);
+	glVertex3f(-1, scale, 0);
+	glEnd();
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_TEXTURE_2D);
+}
 
 void MainOpenGLWidget::paintGL()
 {
@@ -294,4 +309,8 @@ MainOpenGLWidget::~MainOpenGLWidget()
 	glDeleteTextures(1, &DesktopImageTex_Swap);
 	glDeleteShader(GaussianBlurComputeShader);
 	glDeleteProgram(GaussianBlurProgram);
+}
+
+void MainOpenGLWidget::closeEvent(QCloseEvent* event) {
+	renderSystem.release();
 }

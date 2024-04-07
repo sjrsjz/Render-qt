@@ -6,6 +6,7 @@ N:ifOutputRAW;
 
 Main{
     main()->N:={
+        print("Hello World\n");
         Framework_Main()
     }
 }
@@ -44,120 +45,126 @@ Class:vec4{
         return(t);
     }
 }
-Framework{
-    N:buffer1D;
-    N:buffer2D;
-    N:buffer3D;
-    N:Buf;
-    N:compute;
-    N:freeTex;
-    N:Shader;
-    N:getShader;
-    N:setF;
-    N:setF3;
-    N:setI;
-    N:setI3;
-    N:setD;
-    N:setD3;
-    N:setF4;
-    N:setEyeMat;
-    N:setVar;
-    N:setVars;
-    N:getTime;
-    N:getFloat;
-    N:getVec4;
-    N:LoadTex;
-    N:Tex;
-    N:getFFT;
-    N:playFFT;
-    N:BuildUpMash;
-    N:TexMash;
-    N:GetTexMash;
-    N:UpdateMash;
-    N:ClearMashData;
-    N:PushMashData;
-    N:TexLWH;
-    _RenderSystem_:sys;
-    Framework_Main()->N:={
-        buffer1D=sys.getFunction("buffer1D");
-        buffer2D=sys.getFunction("buffer2D");
-        buffer3D=sys.getFunction("buffer3D");
-        Buf=sys.getFunction("Buf");
-        compute=sys.getFunction("compute");
-        freeTex=sys.getFunction("freeTex");
-        Shader=sys.getFunction("Shader");
-        getShader=sys.getFunction("getShader");
-        setF=sys.getFunction("setF");
-        setF3=sys.getFunction("setF3");
-        setF4=sys.getFunction("setF4");
-        setI=sys.getFunction("setI");
-        setI3=sys.getFunction("setI3");
-        setD=sys.getFunction("setD");
-        setD3=sys.getFunction("setD3");
-        setVar=sys.getFunction("setVar");
-        setEyeMat=sys.getFunction("setEyeMat");
-        Tex=sys.getFunction("Tex");
-        LoadTex=sys.getFunction("LoadTex");
-        getFloat=sys.getFunction("getFloat");
-        getVec4=sys.getFunction("getVec4");
-        getTime=sys.getFunction("time");
-        getFFT=sys.getFunction("getFFT");
-        playFFT=sys.getFunction("playFFT");
-        BuildUpMash=sys.getFunction("BuildUpMash");
-        TexMash=sys.getFunction("TexMash");
-        GetTexMash=sys.getFunction("GetTexMash");
-        UpdateMash=sys.getFunction("UpdateMash");
-        PushMashData=sys.getFunction("PushMashData");
-        ClearMashData=sys.getFunction("ClearMashData");
-        setVars=sys.getFunction("setVars");
-        TexLWH=sys.getFunction("TexLWH");
-        sys.setCallback("frame_start",~frame_start);
-        sys.setCallback("frame_end",~frame_end);
-        sys.setCallback("frame_update",~frame_update);
-        sys.setCallback("shader_end",~shader_end);
-        sys.setCallback("var_update",~var_update);
 
-        R:t;
-        getFloat(&"DefaultSize",&t);DefaultSize=t;
-        getFloat(&"DefaultPixelSize",&t);DefaultPixelSize=t;
-        getFloat(&"DefaultLineSize",&t);DefaultLineSize=t;
-        getFloat(&"ifOutputBigImage",&t);ifOutputBigImage=t;
-        getFloat(&"ifOutputRAW",&t);ifOutputRAW=t;
-        shader_start();
+Class:RenderSystemInterface{
+    N:_this;
+    _RenderSystem_:sys;
+    _init_()->N:={
+        _this=sys._this_;
     }
-    setVec4(N:str,vec4:vec)->N:={setF4(str,vec.x,vec.y,vec.z,vec.w)}
-    setVec3(N:str,vec4:vec)->N:={setF3(str,vec.x,vec.y,vec.z)}
-    Transit "" buffer1D(N:size)->N:={return(buffer1D)}
-    Transit "" buffer2D(N:w,N:h)->N:={return(buffer2D)}
-    Transit "" buffer3D(N:l,N:w,N:h)->N:={return(buffer3D)}
-    Transit "" Buf(N:id,N:unit)->N:={return(Buf)}
-    Transit "" freeTex(N:id)->N:={return(freeTex)}
-    Transit "" Shader(N:id)->N:={return(Shader)}
-    Transit "" getShader(N:str)->N:={return(getShader)}
-    Transit "" compute(N:l,N:w,N:h)->N:={return(compute)}
-    Transit "" setVar(N:str)->N:={return(setVar)}
-    Transit "" setVars()->N:={return(setVars)}
-    Transit "" setF(N:str,R:x)->N:={return(setF)}
-    Transit "" setF3(N:str,R:x,R:y,R:z)->N:={return(setF3)}
-    Transit "" setD(N:str,R:x)->N:={return(setD)}
-    Transit "" setD3(N:str,R:x,R:y,R:z)->N:={return(setD3)}
-    Transit "" setI(N:str,N:x)->N:={return(setI)}
-    Transit "" setI3(N:str,N:x,N:y,N:z)->N:={return(setI3)}
-    Transit "" setF4(N:str,R:x,R:y,R:z,R:w)->N:={return(setF4)}
-    Transit "" time(N:t)->N:={return(getTime)}
-    Transit "" setEyeMat(N:str)->N:={return(setEyeMat)}
-    Transit "" Tex(N:id,N:bind,N:dim)->N:={return(Tex)}
-    Transit "" LoadTex(N:str)->N:={return(LoadTex)}
-    Transit "" playFFT(N:tex,N:stream,N:length,N:start,N:playlength)->N:={return(playFFT)}
-    Transit "" getFloat(N:str,N:t)->N:={return(getFloat)}
-    Transit "" getVec4(N:str,vec4:t)->N:={return(getVec4)}
-    Transit "" getFFT(N:str,N:tex,N:size)->N:={return(getFFT)}
-    Transit "" BuildUpMash(N:tex)->N:={return(BuildUpMash)}
-    Transit "" TexMash(N:/*&*/tex)->N:={return(TexMash)}
-    Transit "" GetTexMash(N:tex)->N:={return(GetTexMash)}
-    Transit "" UpdateMash()->N:={return(UpdateMash)}
-    Transit "" PushMashData()->N:={return(PushMashData)}
-    Transit "" ClearMashData()->N:={return(ClearMashData)}
-    Transit "" TexLWH(N:tex,vec4:dim)->N:={return(TexLWH)}
-    GetFloat(N:str)->R:={R:t;getFloat(str,&t);return(t)}
+    Public buffer1D(N:size)->N:={
+        return(image1D(_this,size))
+    }
+    Public buffer2D(N:w,N:h)->N:={
+        return(image2D(_this,w,h))
+    }
+    Public buffer3D(N:l,N:w,N:h)->N:={
+        return(image3D(_this,l,w,h))
+    }
+    Public Tex(N:tex,N:bind,N:dim)->N:={
+        return(bindTex(_this,tex,bind,dim))
+    }
+    Public Buf(N:tex,N:unit)->N:={
+        return(bindImage(_this,tex,unit))
+    }
+    Public freeTex(N:tex)->N:={
+        return(releaseImage(_this,tex))
+    }
+    Public Shader(N:shader)->N:={
+        return(bindProgram(_this,shader))
+    }
+    Public getShader(N:str)->N:={
+        return(getShader_(_this,str))
+    }
+    Public compute(N:l,N:w,N:h)->N:={
+        return(compute(_this,l,w,h))
+    }
+    Public setVar(N:str)->N:={
+        return(setVar(_this,str))
+    }
+    Public setVars()->N:={
+        return(setVars(_this))
+    }
+    Public setF(N:str,R:x)->N:={
+        return(uniform1f(_this,str,x))
+    }
+    Public setF3(N:str,R:x,R:y,R:z)->N:={
+        return(uniform3f(_this,str,x,y,z))
+    }
+    Public setF4(N:str,R:x,R:y,R:z,R:w)->N:={
+        return(uniform4f(_this,str,x,y,z,w))
+    }
+    Public setI(N:str,N:x)->N:={
+        return(uniform1i(_this,str,x))
+    }
+    Public setMat2x2(N:str,R:x[4])->N:={
+        return(uniformMatrix2x2f(_this,str,x))
+    }
+    Public setMat3x3(N:str,R:x[9])->N:={
+        return(uniformMatrix3x3f(_this,str,x))
+    }
+    Public setMat4x4(N:str,R:x[16])->N:={
+        return(uniformMatrix4x4f(_this,str,x))
+    }
+    Public setEyeMat()->N:={
+        return(setVar(_this,"EyeMat"))
+    }
+    Public setCallBack(N:name,N:func)->N:={
+        return(sys.setCallback(name,func))
+    }
+    Public getFloat(N:str)->R:={
+        R:t;
+        getUniform1f(_this, str, &t);
+        return(t)
+    }
+    Public getVec4(N:str)->vec4:={
+        vec4:t;
+        getUniform4f(_this, str, &t);
+        return(t)
+    }
+
+    Public setVec4(N:str,vec4:vec)->N:={uniform4f(_this,str,vec.x,vec.y,vec.z,vec.w)}
+    Public setVec3(N:str,vec4:vec)->N:={uniform3f(_this,str,vec.x,vec.y,vec.z)}
+    Transit "" image1D(N:this_,N:size)->N:={return(sys.getFunction("image1D"))}
+    Transit "" image2D(N:this_,N:w,N:h)->N:={return(sys.getFunction("image2D"))}
+    Transit "" image3D(N:this_,N:l,N:w,N:h)->N:={return(sys.getFunction("image3D"))}
+    Transit "" bindImage(N:this_,N:id,N:unit)->N:={return(sys.getFunction("bindImage"))}
+    Transit "" bindTex(N:this_,N:id,N:bind,N:dim)->N:={return(sys.getFunction("bindTex"))}
+    Transit "" releaseImage(N:this_,N:id)->N:={return(sys.getFunction("releaseImage"))}
+    Transit "" bindProgram(N:this_,N:id)->N:={return(sys.getFunction("bindProgram"))}
+    Transit "" getShader_(N:this_,N:str)->N:={return(sys.getFunction("getShader"))}
+    Transit "" compute(N:this_,N:l,N:w,N:h)->N:={return(sys.getFunction("compute"))}
+    Transit "" setVar(N:this_,N:str)->N:={return(sys.getFunction("setVar"))}
+    Transit "" setVars(N:this_,)->N:={return(sys.getFunction("setVars"))}
+    Transit "" uniform1f(N:this_,N:str,R:x)->N:={return(sys.getFunction("uniform1f"))}
+    Transit "" uniform2f(N:this_,N:str,R:x,R:y,R:z)->N:={return(sys.getFunction("uniform2f"))}
+    Transit "" uniform3f(N:this_,N:str,R:x)->N:={return(sys.getFunction("uniform3f"))}
+    Transit "" uniform4f(N:this_,N:str,R:x,R:y,R:z,R:w)->N:={return(sys.getFunction("uniform4f"))}
+    Transit "" uniform1i(N:this_,N:str,N:x)->N:={return(sys.getFunction("uniform1i"))}
+    Transit "" uniformMatrix2x2f(N:this_,N:str,R:x[4])->N:={return(sys.getFunction("uniformMatrix2x2f"))}
+    Transit "" uniformMatrix3x3f(N:this_,N:str,R:x[9])->N:={return(sys.getFunction("uniformMatrix3x3f"))}
+    Transit "" uniformMatrix4x4f(N:this_,N:str,R:x[16])->N:={return(sys.getFunction("uniformMatrix4x4f"))}
+    Transit "" getUniform1f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniform1f"))}
+    Transit "" getUniform2f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniform2f"))}
+    Transit "" getUniform3f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniform3f"))}
+    Transit "" getUniform4f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniform4f"))}
+    Transit "" getUniform1i(N:this_,N:str)->N:={return(sys.getFunction("getUniform1i"))}
+    Transit "" getUniformMatrix2x2f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniformMatrix2x2f"))}
+    Transit "" getUniformMatrix3x3f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniformMatrix3x3f"))}
+    Transit "" getUniformMatrix4x4f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniformMatrix4x4f"))}
+}
+
+
+Framework{
+    Framework_Main()->N := {
+    RenderSystemInterface:rs;
+    rs.setCallBack("frame_start", ~frame_start);
+    rs.setCallBack("frame_update", ~frame_update);
+    rs.setCallBack("frame_end", ~frame_end);
+    rs.setCallBack("shader_start", ~shader_start);
+    rs.setCallBack("shader_end", ~shader_end);
+    rs.setCallBack("var_update", ~var_update);
+    shader_start();
+    }
+
 }

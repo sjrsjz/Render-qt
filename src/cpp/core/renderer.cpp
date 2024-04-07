@@ -436,8 +436,9 @@ std::wstring RenderSystem::getShaderWithoutInclude(std::wstring cs, std::unorder
 }
 
 
-unsigned int _stdcall RenderSystem::functions(unsigned int this_, const wchar_t* func) {
+unsigned int _stdcall RenderSystem::functions(unsigned int this_, unsigned int func_) {
 	RenderSystem* _this = (RenderSystem*)this_;
+	std::wstring func = (std::wstring)(wchar_t*)func_;
 	if (func == L"image1D") return (unsigned int)RenderSystem::image1D;
 	if (func == L"image2D") return (unsigned int)RenderSystem::image2D;
 	if (func == L"image3D") return (unsigned int)RenderSystem::image3D;
@@ -453,28 +454,37 @@ unsigned int _stdcall RenderSystem::functions(unsigned int this_, const wchar_t*
 	if (func == L"uniformMatrix4x4f") return (unsigned int)RenderSystem::uniformMatrix4x4f;
 	if (func == L"compute") return (unsigned int)RenderSystem::compute;
 	if (func == L"bindProgram") return (unsigned int)RenderSystem::bindProgram;
-
+	if (func == L"getUniform1f") return (unsigned int)RenderSystem::getUniform1f;
+	if (func == L"getUniform2f") return (unsigned int)RenderSystem::getUniform2f;
+	if (func == L"getUniform3f") return (unsigned int)RenderSystem::getUniform3f;
+	if (func == L"getUniform4f") return (unsigned int)RenderSystem::getUniform4f;
+	if (func == L"getUniform1i") return (unsigned int)RenderSystem::getUniform1i;
+	if (func == L"getUniformMatrix2x2f") return (unsigned int)RenderSystem::getUniformMatrix2x2f;
+	if (func == L"getUniformMatrix3x3f") return (unsigned int)RenderSystem::getUniformMatrix3x3f;
+	if (func == L"getUniformMatrix4x4f") return (unsigned int)RenderSystem::getUniformMatrix4x4f;
+	if (func == L"getShader") return (unsigned int)RenderSystem::getShader;
+	throw L"未知函数" + func;
 	return 0;
 }
 
-void _stdcall RenderSystem::callbacks(unsigned int this_, const wchar_t* name, const wchar_t* func) {
+void _stdcall RenderSystem::callbacks(unsigned int this_, unsigned int name, unsigned int func) {
 	RenderSystem* _this = (RenderSystem*)this_;
-	if (name == L"frame_update") {
+	if ((std::wstring)(wchar_t*)name == L"frame_update") {
 		_this->frameUpdate = (bool(*)())func;
 	}
-	else if (name == L"frame_start") {
+	else if ((std::wstring)(wchar_t*)name == L"frame_start") {
 		_this->frameStart = (void(*)())func;
 	}
-	else if (name == L"frame_end") {
+	else if ((std::wstring)(wchar_t*)name == L"frame_end") {
 		_this->frameEnd = (unsigned int (*)())func;
 	}
-	else if (name == L"program_start") {
+	else if ((std::wstring)(wchar_t*)name == L"program_start") {
 		_this->programStart = (void(*)())func;
 	}
-	else if (name == L"program_end") {
+	else if ((std::wstring)(wchar_t*)name == L"program_end") {
 		_this->programEnd = (void(*)())func;
 	}
-	else if (name == L"var_update") {
+	else if ((std::wstring)(wchar_t*)name == L"var_update") {
 		_this->varUpdate = (void(*)(const wchar_t*))func;
 	}
 }
@@ -492,7 +502,8 @@ unsigned int _stdcall RenderSystem::image3D(unsigned int this_, unsigned int wid
 void _stdcall RenderSystem::bindImage(unsigned int this_, unsigned int img, unsigned int binding) {
 	((RenderSystem*)this_)->shader.ex.glBindImageTexture(binding, img, 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA32F);
 }
-void _stdcall RenderSystem::bindTex(unsigned int this_, unsigned int tex, unsigned int dim) {
+void _stdcall RenderSystem::bindTex(unsigned int this_, unsigned int tex, unsigned int bind, unsigned int dim) {
+	((RenderSystem*)this_)->shader.ex.glActiveTexture(GL_TEXTURE0 + bind);
 	switch (dim)
 	{
 	case 1:
@@ -508,41 +519,41 @@ void _stdcall RenderSystem::bindTex(unsigned int this_, unsigned int tex, unsign
 		break;
 	}
 }
-void _stdcall RenderSystem::uniform1f(unsigned int this_, unsigned int program, const wchar_t* name, float value) {
-	((RenderSystem*)this_)->shader.ex.glUniform1f(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)name).c_str()), value);
+void _stdcall RenderSystem::uniform1f(unsigned int this_, unsigned int program, unsigned int name, double value) {
+	((RenderSystem*)this_)->shader.ex.glUniform1f(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)(wchar_t*)name).c_str()), value);
 }
-void _stdcall RenderSystem::uniform2f(unsigned int this_, unsigned int program, const wchar_t* name, float x, float y) {
-	((RenderSystem*)this_)->shader.ex.glUniform2f(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)name).c_str()), x, y);
+void _stdcall RenderSystem::uniform2f(unsigned int this_, unsigned int program, unsigned int name, double x, double y) {
+	((RenderSystem*)this_)->shader.ex.glUniform2f(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)(wchar_t*)name).c_str()), x, y);
 }
-void _stdcall RenderSystem::uniform3f(unsigned int this_, unsigned int program, const wchar_t* name, float x, float y, float z) {
-	((RenderSystem*)this_)->shader.ex.glUniform3f(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)name).c_str()), x, y, z);
+void _stdcall RenderSystem::uniform3f(unsigned int this_, unsigned int program, unsigned int name, double x, double y, double z) {
+	((RenderSystem*)this_)->shader.ex.glUniform3f(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)(wchar_t*)name).c_str()), x, y, z);
 }
-void _stdcall RenderSystem::uniform4f(unsigned int this_, unsigned int program, const wchar_t* name, float x, float y, float z, float w) {
-	((RenderSystem*)this_)->shader.ex.glUniform4f(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)name).c_str()), x, y, z, w);
+void _stdcall RenderSystem::uniform4f(unsigned int this_, unsigned int program, unsigned int name, double x, double y, double z, double w) {
+	((RenderSystem*)this_)->shader.ex.glUniform4f(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)(wchar_t*)name).c_str()), x, y, z, w);
 }
-void _stdcall RenderSystem::uniform1i(unsigned int this_, unsigned int program, const wchar_t* name, int value) {
-	((RenderSystem*)this_)->shader.ex.glUniform1i(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)name).c_str()), value);
+void _stdcall RenderSystem::uniform1i(unsigned int this_, unsigned int program, unsigned int name, int value) {
+	((RenderSystem*)this_)->shader.ex.glUniform1i(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)(wchar_t*)name).c_str()), value);
 }
-void _stdcall RenderSystem::uniformMatrix2x2f(unsigned int this_, unsigned int program, const wchar_t* name, double* value) {
+void _stdcall RenderSystem::uniformMatrix2x2f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
 	float v[4];
 	for (size_t i = 0; i < 4; i++) {
 		v[i] = (float)value[i];
 	}
-	((RenderSystem*)this_)->shader.ex.glUniformMatrix2fv(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)name).c_str()), 1, GL_FALSE, v);
+	((RenderSystem*)this_)->shader.ex.glUniformMatrix2fv(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)(wchar_t*)name).c_str()), 1, GL_FALSE, v);
 }
-void _stdcall RenderSystem::uniformMatrix3x3f(unsigned int this_, unsigned int program, const wchar_t* name, double* value) {
+void _stdcall RenderSystem::uniformMatrix3x3f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
 	float v[9];
 	for (size_t i = 0; i < 9; i++) {
 		v[i] = (float)value[i];
 	}
-	((RenderSystem*)this_)->shader.ex.glUniformMatrix3fv(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)name).c_str()), 1, GL_FALSE, v);
+	((RenderSystem*)this_)->shader.ex.glUniformMatrix3fv(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)(wchar_t*)name).c_str()), 1, GL_FALSE, v);
 }
-void _stdcall RenderSystem::uniformMatrix4x4f(unsigned int this_, unsigned int program, const wchar_t* name, double* value) {
+void _stdcall RenderSystem::uniformMatrix4x4f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
 	float v[16];
 	for (size_t i = 0; i < 16; i++) {
 		v[i] = (float)value[i];
 	}
-	((RenderSystem*)this_)->shader.ex.glUniformMatrix4fv(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)name).c_str()), 1, GL_FALSE, v);
+	((RenderSystem*)this_)->shader.ex.glUniformMatrix4fv(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)(wchar_t*)name).c_str()), 1, GL_FALSE, v);
 }
 void _stdcall RenderSystem::compute(unsigned int this_, unsigned int program, unsigned int width, unsigned int height, unsigned int depth) {
 	unsigned int w, h, d;
@@ -570,9 +581,9 @@ void RenderSystem::enterUpdate() {
 	}
 }
 void RenderSystem::update() {
-	if (frameUpdate) {
+	if (frameUpdate && !Error) {
 		try {
-			while(frameUpdate());
+			while(frameUpdate() && !Error);
 		}
 		catch (...) {
 			info(L"帧更新函数异常");
@@ -582,7 +593,7 @@ void RenderSystem::update() {
 
 }
 unsigned int RenderSystem::leaveUpdate() {
-	if (frameEnd) {
+	if (frameEnd && !Error) {
 		try {
 			return frameEnd();
 		}
@@ -594,8 +605,18 @@ unsigned int RenderSystem::leaveUpdate() {
 	return 0;
 }
 void RenderSystem::create() {
-	if (programStart) {
+	Error = false;
+	try {
+		runner.run();
+	}
+	catch (...) {
+		info(L"程序初始化异常");
+		Error = true;
+		return;
+	}
+	if (programStart && !Error) {
 		try {
+			
 			programStart();
 		}
 		catch (...) {
@@ -621,7 +642,113 @@ void RenderSystem::release() {
 	frameEnd = nullptr;
 	frameUpdate = nullptr;
 	varUpdate = nullptr;
-
-
 }
 void RenderSystem::reset() {}
+void RenderSystem::updateVar(const wchar_t* name) {
+	if (varUpdate && !Error) {
+		try {
+			varUpdate(name);
+		}
+		catch (...) {
+			info(L"变量更新函数异常");
+			Error = true;
+		}
+	}
+}
+
+void _stdcall RenderSystem::getUniform1f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == name) {
+			*value = x.data_1;
+			return;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+}
+void _stdcall RenderSystem::getUniform2f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == name) {
+			value[0] = x.data_2.x;
+			value[1] = x.data_2.y;
+			return;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+}
+void _stdcall RenderSystem::getUniform3f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == name) {
+			value[0] = x.data_3.x;
+			value[1] = x.data_3.y;
+			value[2] = x.data_3.z;
+			return;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+}
+void _stdcall RenderSystem::getUniform4f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == name) {
+			value[0] = x.data_4.x;
+			value[1] = x.data_4.y;
+			value[2] = x.data_4.z;
+			value[3] = x.data_4.w;
+			return;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+}
+int _stdcall RenderSystem::getUniform1i(unsigned int this_, unsigned int program, unsigned int name) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == name) {
+			return x.data_int;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+	return 0;
+}
+void _stdcall RenderSystem::getUniformMatrix2x2f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == name) {
+			std::copy(std::begin(x.data_matrix2x2), std::end(x.data_matrix2x2), value);
+			return;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+}
+void _stdcall RenderSystem::getUniformMatrix3x3f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == name) {
+			std::copy(std::begin(x.data_matrix3x3), std::end(x.data_matrix3x3), value);
+			return;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+}
+void _stdcall RenderSystem::getUniformMatrix4x4f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == name) {
+			std::copy(std::begin(x.data_matrix4x4), std::end(x.data_matrix4x4), value);
+			return;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+}
+unsigned int _stdcall RenderSystem::getShader(unsigned int this_, unsigned int name) {
+	for (size_t i = 0; i < ((RenderSystem*)this_)->ComputeShadersName.size(); i++) {
+		if (((RenderSystem*)this_)->ComputeShadersName[i] == (std::wstring)(wchar_t*)name) {
+			return ((RenderSystem*)this_)->ComputeShaders[i];
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知Shader:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+	return 0;
+}

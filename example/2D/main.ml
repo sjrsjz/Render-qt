@@ -8,7 +8,7 @@ Shader_Main{
     N:SizeW;N:SizeH;
     N:Frame;
     N:bufA;N:bufB;N:buf2;
-    N:front;N:Offset;
+    Boolen:front;N:Offset;
     N:lOffset;
     vec4:Position2D;
     vec4:RGB[2];
@@ -17,39 +17,44 @@ Shader_Main{
         Frame=0;front=1
     }
     frame_start()->N:={
-        Offset=GetFloat(&"offset");
-        scale=GetFloat(&"scale");
-        getVec4(&"Position2D",Position2D);
-        getVec4(&"RGB",RGB[0]);
-        getVec4(&"RGB2",RGB[1]);
-        if(lOffset!=Offset){
-            Frame=0
+        RenderSystemInterface:rs;
+        Offset = rs.getFloat(&"offset");
+        scale = rs.getFloat(&"scale");
+        Position2D = rs.getVec4(&"Position2D");
+        RGB[0] = rs.getVec4(&"RGB");
+        RGB[1] = rs.getVec4(&"RGB2");
+        if(lOffset != Offset){
+            Frame = 0
         };
-        lOffset=Offset;
-        front=-front;
-        bufA=buf0;bufB=buf1;
-        if(front==1){
-            bufA=buf1;bufB=buf0
+        lOffset = Offset;
+        front = not front;
+        bufA = buf0;
+        bufB = buf1;
+        if(front){
+            bufA = buf1;
+            bufB = buf0
         };
-        time(&time);
+        time = rs.getFloat("time")
     }
     frame_update()->N:={
-        Shader(buf0_s);
-        Buf(bufA,0);Buf(bufB,1);
-        Buf(buf2,2);
-        setF(&"iTime",time);
-        setI(&"iFrame",Frame);
-        setI(&"iOffset",Offset);
-        setI(&"iW",SizeW);
-        setI(&"iH",SizeH);
-        setF(&"scale",scale);
-        setVec4(&"Position2D",Position2D);
-        setVec3(&"RGB",RGB[0]);
-        setVec3(&"RGB2",RGB[1]);
+        RenderSystemInterface:rs;
+        rs.Shader(buf0_s);
+        rs.Buf(bufA,0);
+        rs.Buf(bufB, 1);
+        rs.Buf(buf2, 2);
+        rs.setF(&"iTime", time);
+        rs.setI(&"iFrame", Frame);
+        rs.setI(&"iOffset", Offset);
+        rs.setI(&"iW", SizeW);
+        rs.setI(&"iH", SizeH);
+        rs.setF(&"scale", scale);
+        rs.setVec4(&"Position2D", Position2D);
+        rs.setVec3(&"RGB", RGB[0]);
+        rs.setVec3(&"RGB2", RGB[1]);
         N:size0=SizeW/DefaultPixelSize;
         N:size1=SizeH/DefaultPixelSize;
-        compute(size0,size1,1);
-        Shader(0);
+        rs.compute(size0, size1, 1);
+        rs.Shader(0);
         return(1);//if zero,then keep updating
     }
     frame_end()->N:={
@@ -58,18 +63,22 @@ Shader_Main{
     }
     shader_start()->N:={
         Frame=0;
-        front=1;
+        front=true;
         lOffset=0;
         SizeW=DefaultSize;SizeH=SizeW;
         if(ifOutputBigImage!=0){
             SizeH=DefaultLineSize*DefaultPixelSize;
         };
-        buf0=buffer2D(SizeW,SizeH);
-        buf1=buffer2D(SizeW,SizeH);
-        buf2=buffer2D(SizeW,SizeH);
-        buf0_s=getShader(&"buf0");
+        RenderSystemInterface:rs;
+        buf0 = rs.buffer2D(SizeW, SizeH);
+        buf1 = rs.buffer2D(SizeW, SizeH);
+        buf2 = rs.buffer2D(SizeW, SizeH);
+        buf0_s = rs.getShader("buf0");
     }
     shader_end()->N:={
-        freeTex(buf0);freeTex(buf1);freeTex(buf2)
+        RenderSystemInterface:rs;
+        rs.freeTex(buf0);
+        rs.freeTex(buf1);
+        rs.freeTex(buf2)
     }
 }

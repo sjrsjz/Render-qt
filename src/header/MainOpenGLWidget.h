@@ -78,11 +78,13 @@ private:
 	GLuint DesktopImageTex_Swap = 0;
 
 	void CaptureScreen( GLuint PBO, int width, int height, GLuint Tex);
+	void DrawFullWindowTexture(GLuint Tex);
 	~MainOpenGLWidget();
 protected:
     virtual void initializeGL();
     virtual void resizeGL(int w, int h);
     virtual void paintGL();
+	virtual void closeEvent(QCloseEvent* event);
 
 signals:
 
