@@ -64,50 +64,62 @@ int Shader::CompileComputeShader(const char* compute_shader_text, GLuint* comput
 	int program; bool err = false;
 	if (compute_shader_text == nullptr) return -1;
 
-	if (compute_shader_text != nullptr) {
-		*compute_shader = gl->glCreateShader(GL_COMPUTE_SHADER);
-		gl->glShaderSource(*compute_shader, 1, &compute_shader_text, NULL);
-		gl->glCompileShader(*compute_shader);
-		GLint a = false;
-		gl->glGetShaderiv(*compute_shader, 0x8B81, &a);
-		if (!a)
-		{
-			char buf[2048]; int err_size;
-			gl->glGetShaderInfoLog(*compute_shader, 2047, &err_size, (char*)buf);
-			std::cout << buf << std::endl; err |= true;
-			OutputDebugStringA(buf);
-		}
+
+	*compute_shader = gl->glCreateShader(GL_COMPUTE_SHADER);
+	gl->glShaderSource(*compute_shader, 1, &compute_shader_text, NULL);
+	gl->glCompileShader(*compute_shader);
+	GLint a = false;
+	gl->glGetShaderiv(*compute_shader, 0x8B81, &a);
+	if (!a)
+	{
+		char buf[2048]; int err_size;
+		gl->glGetShaderInfoLog(*compute_shader, 2047, &err_size, (char*)buf);
+		std::cout << buf << std::endl; err |= true;
+		OutputDebugStringA(buf);
 	}
+	
 	program = gl->glCreateProgram();
 	gl->glAttachShader(program, *compute_shader);
 	gl->glLinkProgram(program);
 	return err ? -1 : program;
 
 }
-
 int Shader::CompileComputeShader(const char* compute_shader_text, GLuint* compute_shader, char* errbuf) {
+
 	int program; bool err = false;
 	if (compute_shader_text == nullptr) return -1;
 
-	if (compute_shader_text != nullptr) {
-		*compute_shader = gl->glCreateShader(GL_COMPUTE_SHADER);
-		gl->glShaderSource(*compute_shader, 1, &compute_shader_text, NULL);
-		gl->glCompileShader(*compute_shader);
-		GLint a = false;
-		gl->glGetShaderiv(*compute_shader, 0x8B81, &a);
-		if (!a)
-		{
-			int err_size;
-			gl->glGetShaderInfoLog(*compute_shader, 2047, &err_size, errbuf);
-			err |= true;
-			OutputDebugStringA(errbuf);
-		}
+	*compute_shader = gl->glCreateShader(GL_COMPUTE_SHADER);
+	gl->glShaderSource(*compute_shader, 1, &compute_shader_text, NULL);
+	gl->glCompileShader(*compute_shader);
+
+	GLint isCompiled = 0;
+	gl->glGetShaderiv(*compute_shader, GL_COMPILE_STATUS, &isCompiled);
+	if (isCompiled == GL_FALSE)
+	{
+		int err_size;
+		gl->glGetShaderInfoLog(*compute_shader, 2047, &err_size, errbuf);
+		err |= true;
+		OutputDebugStringA(errbuf);
+		return -1;
 	}
+
 	program = gl->glCreateProgram();
 	gl->glAttachShader(program, *compute_shader);
 	gl->glLinkProgram(program);
-	return err ? -1 : program;
+	
+	GLint isLinked = 0;
+	gl->glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+	if (isLinked == GL_FALSE)
+	{
+		int err_size;
+		gl->glGetProgramInfoLog(program, 2047, &err_size, errbuf);
+		err |= true;
+		OutputDebugStringA(errbuf);
+		return -1;
+	}
 
+	return err ? -1 : program;
 }
 
 int Shader::Create1DImageTex32F(int width) {

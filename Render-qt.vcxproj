@@ -70,6 +70,7 @@
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>opengl32.lib;".\lib\GlU32.Lib";%(AdditionalDependencies)</AdditionalDependencies>
@@ -81,6 +82,7 @@
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
     </ClCompile>
     <Link>
       <AdditionalDependencies>opengl32.lib;".\lib\GlU32.Lib";%(AdditionalDependencies)</AdditionalDependencies>
@@ -123,12 +125,14 @@
     <ClCompile Include="..\M Lang\cpp\vm.cpp" />
     <ClCompile Include="..\M Lang\cpp\x64.cpp" />
     <ClCompile Include="..\M Lang\cpp\x86.cpp" />
+    <ClCompile Include="src\cpp\core\camera.cpp" />
     <ClCompile Include="src\cpp\core\renderer.cpp" />
     <ClCompile Include="src\cpp\GLButton.cpp" />
     <ClCompile Include="src\cpp\GL_UI.cpp" />
     <ClCompile Include="src\cpp\MainOpenGLWidget.cpp" />
     <ClCompile Include="src\cpp\shader.cpp" />
     <QtRcc Include="Render_qt.qrc" />
+    <QtUic Include="Parameters.ui" />
     <QtUic Include="Render_qt.ui" />
     <QtMoc Include="Render_qt.h" />
     <ClCompile Include="Render_qt.cpp" />
@@ -150,6 +154,7 @@
     <ClInclude Include="..\M Lang\header\x64.h" />
     <ClInclude Include="..\M Lang\header\x86.h" />
     <ClInclude Include="src\header\Common.h" />
+    <ClInclude Include="src\header\core\camera.h" />
     <ClInclude Include="src\header\core\renderer.h" />
     <ClInclude Include="src\header\GLButton.h" />
     <ClInclude Include="src\header\shader.h" />

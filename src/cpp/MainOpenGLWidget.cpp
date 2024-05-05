@@ -64,15 +64,17 @@ void MainOpenGLWidget::CaptureScreen(GLuint PBO, int width, int height, GLuint T
 	binfo.bmiHeader.biSizeImage = 0;
 
 	HDC hDC = CreateCompatibleDC(0);
-	HBITMAP hObj = CreateDIBSection(hDC, &binfo, 0, 0, 0, 0);
+	void* pBits;
+	HBITMAP hObj = CreateDIBSection(hDC, &binfo, 0, &pBits, 0, 0);
 	SelectObject(hDC, hObj);
-	
+
 	BitBlt(hDC, 0, 0, width, height, WorkerW_Hdc, 0, 0, SRCCOPY);
-	
+
 	shader.gl->glBindBuffer(GL_PIXEL_UNPACK_BUFFER, PBO);
-	
+
 	void* p = shader.ex.glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
-	GetDIBits(hDC, hObj, 0, height, p, &binfo, DIB_RGB_COLORS);
+	memcpy(p, pBits, height * width * 3);
+	//GetDIBits(hDC, hObj, 0, height, p, &binfo, DIB_RGB_COLORS);
 	shader.ex.glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
 	DeleteObject(hObj);
 	DeleteDC(hDC);
@@ -101,7 +103,7 @@ void MainOpenGLWidget::initializeGL()
 	initializeOpenGLFunctions();
 	//enable debug output
 	//glEnable(GL_DEBUG_OUTPUT);
-	//glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback((GLDEBUGPROC)GLDebugMessageCallback, nullptr);
 	//set clear color
 
@@ -145,7 +147,21 @@ void MainOpenGLWidget::initializeGL()
 	renderSystem.shader.init();
 
 	renderSystem.info_callback = infoCallback;
-	renderSystem.build(L"D:\\VS Projects\\Render-qt\\example\\2D\\main.gcw");
+
+	QCommandLineOption option("file", "The file to open.", "file");
+	QCommandLineParser parser;
+	parser.addOption(option);
+	parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
+	try{
+		parser.process(QCoreApplication::arguments());
+	}
+	catch (std::exception e) {
+		std::cout << e.what() << std::endl;
+		exit(1);
+	}
+	QString file = parser.value(option);
+
+	renderSystem.build(file.toStdWString());
 
 	renderSystem.create();
 }
@@ -255,11 +271,11 @@ void MainOpenGLWidget::DrawScene() {
 	if (renderSystem.Error) return;
 	renderSystem.enterUpdate();
 	renderSystem.update();
-	DrawFullWindowTexture(renderSystem.leaveUpdate());
+	DrawFullWindowTexture(renderSystem.leaveUpdate(), false);
 
 }	
 
-void MainOpenGLWidget::DrawFullWindowTexture(GLuint Tex) {
+void MainOpenGLWidget::DrawFullWindowTexture(GLuint Tex, bool resize) {
 	//scale tex and draw it to full window
 	glPushMatrix();
 	glLoadIdentity();
@@ -269,19 +285,24 @@ void MainOpenGLWidget::DrawFullWindowTexture(GLuint Tex) {
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glBindTexture(GL_TEXTURE_2D, Tex);
 	glBegin(GL_QUADS);
-	float scale = double(height()) / width();
+	float scale = resize ? double(height()) / width() : 1;
+	float scale2 = 1;
+	if (!resize && height() > width()) {
+		scale2 = double(height()) / width();
+	}
 	glColor4f(1, 1, 1, 1);
 	glTexCoord2f(0, 0);
-	glVertex3f(-1, -scale, 0);
+	glVertex3f(-scale2, -scale * scale2, 0);
 	glTexCoord2f(1, 0);
-	glVertex3f(1, -scale, 0);
+	glVertex3f(scale2, -scale * scale2, 0);
 	glTexCoord2f(1, 1);
-	glVertex3f(1, scale, 0);
+	glVertex3f(scale2, scale * scale2, 0);
 	glTexCoord2f(0, 1);
-	glVertex3f(-1, scale, 0);
+	glVertex3f(-scale2, scale * scale2, 0);
 	glEnd();
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDisable(GL_TEXTURE_2D);
+	glPopMatrix();
 }
 
 void MainOpenGLWidget::paintGL()

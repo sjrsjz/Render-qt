@@ -6,6 +6,8 @@
 #include <QtGui/qscreen.h>
 #include "core/renderer.h"
 #include "shader.h"
+#include <QtCore/qcommandlineoption.h>
+#include <QtCore/qcommandlineparser.h>
 
 
 
@@ -78,7 +80,7 @@ private:
 	GLuint DesktopImageTex_Swap = 0;
 
 	void CaptureScreen( GLuint PBO, int width, int height, GLuint Tex);
-	void DrawFullWindowTexture(GLuint Tex);
+	void DrawFullWindowTexture(GLuint Tex, bool resize);
 	~MainOpenGLWidget();
 protected:
     virtual void initializeGL();

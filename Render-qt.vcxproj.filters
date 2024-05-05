@@ -109,6 +109,9 @@
     <ClCompile Include="..\M Lang\cpp\precompile.cpp">
       <Filter>MLang\cpp</Filter>
     </ClCompile>
+    <ClCompile Include="src\cpp\core\camera.cpp">
+      <Filter>Source Files\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\header\GLButton.h">
@@ -168,10 +171,18 @@
     <ClInclude Include="..\M Lang\header\x86.h">
       <Filter>MLang\header</Filter>
     </ClInclude>
+    <ClInclude Include="src\header\core\camera.h">
+      <Filter>Header Files\core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="src\header\MainOpenGLWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="Parameters.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
 </Project>

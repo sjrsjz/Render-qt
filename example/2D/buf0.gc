@@ -3,63 +3,37 @@ layout (local_size_x=####,local_size_y=####) in;//#### means default pixel(or wo
 layout (rgba32f,binding=0) uniform image2D input_;
 layout (rgba32f,binding=1) uniform image2D output_;
 layout (rgba32f,binding=2) uniform image2D data_;
-uniform float iTime,scale;
-uniform int iFrame,iOffset,iW,iH;
-uniform vec4 Position2D;
-uniform vec3 RGB,RGB2;
-ivec2 lp;
-void F(float x,float y);
-vec4 Load(ivec2 pos){
-    return imageLoad(input_,pos);
+
+uniform vec4 RGBA;
+uniform vec4 RGBA2;
+
+vec3 ToRGB(float _A_,float _B_,vec3 _RGB_,vec3 _RGB2_){
+    float _co_=max(_A_+1.0- log(.5*log(_B_)),0);
+    _co_ = sqrt(_co_/256.0);
+    return _RGB2_*vec3(.5+.5*cos(6.2831*_co_+_RGB_.x),.5+.5*cos(6.2831*_co_+_RGB_.y),.5+.5*cos(6.2831*_co_+_RGB_.z));
 }
-void Store(ivec2 pos,vec4 data0){
-    imageStore(output_,pos,data0);
+vec2 cMul(vec2 a, vec2 b) {
+	return vec2(a.x*b.x-a.y*b.y,a.x*b.y+a.y*b.x);
 }
-vec4 Load(){
-    return imageLoad(input_,lp);
+vec2 cLog(vec2 a) {
+	float b =  atan(a.y,a.x);
+	if (b<0.0) b+=2.0*3.1415926535;
+	return vec2(log(length(a)),b);
 }
-void Store(vec4 data0){
-    imageStore(output_,lp,data0);
+vec2 cExp(vec2 z) {
+	return exp(z.x) * vec2(cos(z.y), sin(z.y));
 }
-void main(){
-    lp=ivec2(gl_GlobalInvocationID.xy);
-    Store(lp,Load(lp));
-    F(2.0*(lp.x/float(iW)-0.5),2.0*((lp.y+iOffset*iH)/float(iW)-0.5));
+vec2 cPow(vec2 z, vec2 a) {
+	return cExp(cMul(cLog(z), a));
+}
+vec2 cDiv(vec2 a, vec2 b){
+  float d = dot(b,b);
+  return vec2(dot(a,b),a.y*b.x-a.x*b.y)/d;
 }
 
-#include "common.nml"
-
-void Edge(){
-    vec4 a[5];float d00;
-    a[0]=Load(lp+ivec2(-1,0));
-    a[1]=Load(lp+ivec2(1,0));
-    a[2]=Load(lp+ivec2(0,-1));
-    a[3]=Load(lp+ivec2(0,1));
-    a[4]=Load();
-    d00=length(abs(a[0]+a[1]-2*a[4])+abs(a[2]+a[3]-2*a[4]));//Laplacian
-    a[4].z=(d00<=0.1?1:0);
-    imageStore(data_,lp,a[4]);
-}
-void DSSAA(){
-    vec4 a[5],b[5];float d00;
-    a[0]=imageLoad(data_,lp+ivec2(-1,0));
-    a[1]=imageLoad(data_,lp+ivec2(1,0));
-    a[2]=imageLoad(data_,lp+ivec2(0,-1));
-    a[3]=imageLoad(data_,lp+ivec2(0,1));
-    a[4]=imageLoad(data_,lp);
-    b[0]=Load(lp+ivec2(-1,0));
-    b[1]=Load(lp+ivec2(1,0));
-    b[2]=Load(lp+ivec2(0,-1));
-    b[3]=Load(lp+ivec2(0,1));
-    b[4]=Load();
-    vec4 c=vec4(0);float S=0;
-    if(a[0].z==1){c+=b[0];S++;}
-    if(a[1].z==1){c+=b[1];S++;}
-    if(a[2].z==1){c+=b[2];S++;}
-    if(a[3].z==1){c+=b[3];S++;}
-    Store((b[4]+c)/(1+S));
-}
 vec4 color(vec2 pos){
+    pos*=1.5;
+    pos.x-=0.5;
     vec4 Calc;
     pos*=2;
     int S=200;
@@ -72,23 +46,10 @@ vec4 color(vec2 pos){
         if(length(z1)>2) break;
     }
 
-    return vec4(ToRGB(i,dot(z1,z1),RGB,RGB2),1);
+    return vec4(ToRGB(i,dot(z1,z1),RGBA.rgb,RGBA2.rgb),1);
 }
-const int SSAA=4;
-void F(float x,float y){
-    if(abs(y)>1) return;
-    //if(iFrame>=SSAA*SSAA+1&&iFrame<=SSAA*SSAA+16){ Edge();DSSAA();}
-    if(iFrame>SSAA*SSAA) return;
-    float x0=mod(iFrame,SSAA)/SSAA;
-    float y0=floor(iFrame/SSAA)/SSAA;
-    x+=1.0/iW*x0;
-    y+=1.0/iW*y0;
 
-    vec2 p=Position2D.xy+vec2(x,y)*scale;
-    vec3 tcolor=color(p).xyz;
-    if(iFrame<=1){
-        Store(lp,vec4(tcolor,1));
-    }else{
-        vec4 temp0=Load(lp);Store(lp,(temp0*iFrame+vec4(tcolor,1))/(iFrame+1));
-    }
+void main(){
+    ivec2 p=ivec2(gl_GlobalInvocationID.xy);
+    imageStore(output_,p,color(vec2(p)/imageSize(output_)*2-1));
 }

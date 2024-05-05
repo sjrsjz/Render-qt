@@ -49,6 +49,7 @@ std::wstring loadFileString(std::wstring file) {
 
 bool RenderSystem::build(std::wstring ProjectFile) {
 	release();
+	this->Error = false;
 	//Get the Project Directory
 	_ProjectDir = ProjectFile.substr(0, ProjectFile.find_last_of(L"\\"));
 	_ProjectFile = ProjectFile.substr(ProjectFile.find_last_of(L"\\") + 1);
@@ -57,6 +58,7 @@ bool RenderSystem::build(std::wstring ProjectFile) {
 	std::wifstream Project(ProjectFile);
 	if (!Project.is_open()) {
 		info(L"工程文件打开失败");
+		this->Error = true;
 		return false;
 	}
 	std::wstring text;
@@ -71,6 +73,7 @@ bool RenderSystem::build(std::wstring ProjectFile) {
 	}
 	if (lines.size() % 3) {
 		info(L"工程文件格式错误");
+		this->Error = true;
 		return false;
 	}
 	project.MLang_file = L"";
@@ -102,6 +105,7 @@ bool RenderSystem::build(std::wstring ProjectFile) {
 	}
 	if (project.MLang_file.empty() || project.Var_file.empty() || project.Shaders.empty()) {
 		info(L"工程文件格式错误");
+		this->Error = true;
 		return false;
 	}
 	info(L"读取工程文件成功");
@@ -119,6 +123,7 @@ bool RenderSystem::build(std::wstring ProjectFile) {
 		ComputeShadersName.push_back(project.ShaderName[ComputeShadersName.size()]);
 		if (ComputePrograms.back() < 0) {
 			info((L"Shader编译失败:\n" + MLang::to_wide_string((std::string)errbuf)).c_str());
+			this->Error = true;
 			return false;
 		}
 	}
@@ -162,6 +167,7 @@ bool RenderSystem::build(std::wstring ProjectFile) {
 	goto Success;
 Error:
 	info((L"编译MLang程序失败\n" + MLangError).c_str());
+	this->Error = true;
 	return false;
 Success:
 	info(L"编译MLang程序成功");
@@ -170,6 +176,7 @@ Success:
 	std::wifstream VarFile(project.Var_file);
 	if (!VarFile.is_open()) {
 		info(L"变量文件打开失败");
+		this->Error = true;
 		return false;
 	}
 	text = std::wstring((std::istreambuf_iterator<wchar_t>(VarFile)), std::istreambuf_iterator<wchar_t>());
@@ -184,6 +191,7 @@ Success:
 		if (type == L"float") {
 			if (tokens.size() < 3) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -197,6 +205,7 @@ Success:
 		else if (type == L"vec2") {
 			if (tokens.size() < 4) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -210,6 +219,7 @@ Success:
 		else if (type == L"vec3") {
 			if (tokens.size() < 5) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -223,6 +233,7 @@ Success:
 		else if (type == L"vec4") {
 			if (tokens.size() < 6) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -236,6 +247,7 @@ Success:
 		else if (type == L"int") {
 			if (tokens.size() < 3) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -249,6 +261,7 @@ Success:
 		else if (type == L"mat2x2") {
 			if (tokens.size() < 6) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -262,6 +275,7 @@ Success:
 			}
 			catch (...) {
 				info((L"变量 " + name + L" 参数错误").c_str());
+				this->Error = true;
 				return false;
 			}
 			std::copy(std::begin(v.data_matrix2x2), std::end(v.data_matrix2x2), std::begin(v.default_matrix2x2));
@@ -271,6 +285,7 @@ Success:
 		else if (type == L"mat3x3") {
 			if (tokens.size() < 10) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -284,6 +299,7 @@ Success:
 			}
 			catch (...) {
 				info((L"变量 " + name + L" 参数错误").c_str());
+				this->Error = true;
 				return false;
 			}
 			std::copy(std::begin(v.data_matrix3x3), std::end(v.data_matrix3x3), std::begin(v.default_matrix3x3));
@@ -292,6 +308,7 @@ Success:
 		else if (type == L"mat4x4") {
 			if (tokens.size() < 18) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -305,6 +322,7 @@ Success:
 			}
 			catch (...) {
 				info((L"变量 " + name + L" 参数错误").c_str());
+				this->Error = true;
 				return false;
 			}
 			std::copy(std::begin(v.data_matrix4x4), std::end(v.data_matrix4x4), std::begin(v.default_matrix4x4));
@@ -313,6 +331,7 @@ Success:
 		else if (type == L"color") {
 			if (tokens.size() < 5) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -325,6 +344,7 @@ Success:
 		else if (type == L"color4") {
 			if (tokens.size() < 6) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			var v{};
@@ -337,6 +357,7 @@ Success:
 		else if (type == L"tex") {
 			if (tokens.size() < 3) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			texture t;
@@ -351,6 +372,7 @@ Success:
 		else if (type == L"buffer1D") {
 			if (tokens.size() < 4) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			GLImage img(&shader);
@@ -366,6 +388,7 @@ Success:
 		else if (type == L"buffer2D") {
 			if (tokens.size() < 5) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			GLImage img(&shader);
@@ -381,6 +404,7 @@ Success:
 		else if (type == L"buffer3D") {
 			if (tokens.size() < 6) {
 				info((L"变量 " + name + L" 参数过少").c_str());
+				this->Error = true;
 				return false;
 			}
 			GLImage img(&shader);
@@ -395,6 +419,7 @@ Success:
 		}
 		else {
 			info((L"不支持的变量类型:" + type).c_str());
+			this->Error = true;
 			return false;
 		}
 	}
@@ -555,13 +580,8 @@ void _stdcall RenderSystem::uniformMatrix4x4f(unsigned int this_, unsigned int p
 	}
 	((RenderSystem*)this_)->shader.ex.glUniformMatrix4fv(((RenderSystem*)this_)->shader.ex.glGetUniformLocation(program, to_byte_string((std::wstring)(wchar_t*)name).c_str()), 1, GL_FALSE, v);
 }
-void _stdcall RenderSystem::compute(unsigned int this_, unsigned int program, unsigned int width, unsigned int height, unsigned int depth) {
-	unsigned int w, h, d;
-
-	((RenderSystem*)this_)->shader.ex.glGetProgramiv(program, GL_COMPUTE_WORK_GROUP_SIZE, (int*)&w);
-	((RenderSystem*)this_)->shader.ex.glGetProgramiv(program, GL_COMPUTE_WORK_GROUP_SIZE, (int*)&h);
-	((RenderSystem*)this_)->shader.ex.glGetProgramiv(program, GL_COMPUTE_WORK_GROUP_SIZE, (int*)&d);
-	((RenderSystem*)this_)->shader.ex.glDispatchCompute(width / w + (unsigned int)(width%w != 0), height / h + (unsigned int)(height % h != 0), depth / d + (unsigned int)(depth % d != 0));
+void _stdcall RenderSystem::compute(unsigned int this_, unsigned int program, unsigned int width, unsigned int height, unsigned int depth, unsigned int g_w, unsigned int g_h, unsigned int g_d) {
+	((RenderSystem*)this_)->shader.ex.glDispatchCompute(width / g_w + (unsigned int)(width%g_w != 0), height / g_h + (unsigned int)(height % g_h != 0), depth / g_d + (unsigned int)(depth % g_d != 0));
 	((RenderSystem*)this_)->shader.ex.glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
 }
 void _stdcall RenderSystem::bindProgram(unsigned int this_, unsigned int program) {
@@ -570,47 +590,54 @@ void _stdcall RenderSystem::bindProgram(unsigned int this_, unsigned int program
 
 
 void RenderSystem::enterUpdate() {
-	if (frameStart) {
+	_set_se_translator(sehTranslator);
+	if (frameStart && !Error) {
 		try {
 			frameStart();
 		}
-		catch (...) {
-			info(L"帧起始函数异常");
+		catch (const SEHException& e) {
+			info((L"帧起始函数异常" + e.getExceptionString()).c_str());
 			Error = true;
 		}
 	}
 }
 void RenderSystem::update() {
+	_set_se_translator(sehTranslator);
 	if (frameUpdate && !Error) {
 		try {
-			while(frameUpdate() && !Error);
+			while(!frameUpdate() && !Error);
 		}
-		catch (...) {
-			info(L"帧更新函数异常");
+		catch (const SEHException& e) {
+			info((L"帧更新函数异常" + e.getExceptionString()).c_str());
+			info(runner.getTraceBackInfo().c_str());
 			Error = true;
 		}
 	}
 
 }
 unsigned int RenderSystem::leaveUpdate() {
+	_set_se_translator(sehTranslator);
 	if (frameEnd && !Error) {
 		try {
 			return frameEnd();
 		}
-		catch (...) {
-			info(L"帧结束函数异常");
+		catch (const SEHException& e) {
+			info((L"帧结束函数异常\n" + e.getExceptionString()).c_str());
+			info(runner.getTraceBackInfo().c_str());
 			Error = true;
 		}
 	}
 	return 0;
 }
 void RenderSystem::create() {
-	Error = false;
+	_set_se_translator(sehTranslator);
+	if(Error) return;
 	try {
 		runner.run();
 	}
-	catch (...) {
-		info(L"程序初始化异常");
+	catch (const SEHException& e) {
+		info((L"程序初始化异常\n" + e.getExceptionString()).c_str());
+		info(runner.getTraceBackInfo().c_str());
 		Error = true;
 		return;
 	}
@@ -619,20 +646,23 @@ void RenderSystem::create() {
 			
 			programStart();
 		}
-		catch (...) {
-			info(L"程序起始函数异常");
+		catch (const SEHException& e) {
+			info((L"程序起始函数异常\n" + e.getExceptionString()).c_str());
+			info(runner.getTraceBackInfo().c_str());
 			Error = true;
 		}
 	}
 
 }
 void RenderSystem::release() {
+	_set_se_translator(sehTranslator);
 	if (programEnd) {
 		try {
 			programEnd();
 		}
-		catch (...) {
-			info(L"程序结束函数异常");
+		catch (const SEHException& e) {
+			info((L"程序结束函数异常\n" + e.getExceptionString()).c_str());
+			info(runner.getTraceBackInfo().c_str());
 			Error = true;
 		}
 	}
@@ -645,20 +675,25 @@ void RenderSystem::release() {
 }
 void RenderSystem::reset() {}
 void RenderSystem::updateVar(const wchar_t* name) {
+	_set_se_translator(sehTranslator);
 	if (varUpdate && !Error) {
 		try {
 			varUpdate(name);
 		}
-		catch (...) {
-			info(L"变量更新函数异常");
+		catch (const SEHException& e) {
+			info((L"变量更新函数异常\n" + e.getExceptionString()).c_str());
+			info(runner.getTraceBackInfo().c_str());
 			Error = true;
 		}
 	}
 }
 
-void _stdcall RenderSystem::getUniform1f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+void _stdcall RenderSystem::getUniform1f(unsigned int this_, unsigned int name, double* value) {
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Time")) {
+		*value = ((RenderSystem*)this_)->Render_Time;
+	}
 	for (auto& x : ((RenderSystem*)this_)->vars) {
-		if (x.name == name) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
 			*value = x.data_1;
 			return;
 		}
@@ -666,9 +701,9 @@ void _stdcall RenderSystem::getUniform1f(unsigned int this_, unsigned int progra
 	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
 	((RenderSystem*)this_)->Error = true;
 }
-void _stdcall RenderSystem::getUniform2f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+void _stdcall RenderSystem::getUniform2f(unsigned int this_, unsigned int name, double* value) {
 	for (auto& x : ((RenderSystem*)this_)->vars) {
-		if (x.name == name) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
 			value[0] = x.data_2.x;
 			value[1] = x.data_2.y;
 			return;
@@ -677,9 +712,9 @@ void _stdcall RenderSystem::getUniform2f(unsigned int this_, unsigned int progra
 	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
 	((RenderSystem*)this_)->Error = true;
 }
-void _stdcall RenderSystem::getUniform3f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+void _stdcall RenderSystem::getUniform3f(unsigned int this_, unsigned int name, double* value) {
 	for (auto& x : ((RenderSystem*)this_)->vars) {
-		if (x.name == name) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
 			value[0] = x.data_3.x;
 			value[1] = x.data_3.y;
 			value[2] = x.data_3.z;
@@ -689,9 +724,9 @@ void _stdcall RenderSystem::getUniform3f(unsigned int this_, unsigned int progra
 	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
 	((RenderSystem*)this_)->Error = true;
 }
-void _stdcall RenderSystem::getUniform4f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+void _stdcall RenderSystem::getUniform4f(unsigned int this_, unsigned int name, double* value) {
 	for (auto& x : ((RenderSystem*)this_)->vars) {
-		if (x.name == name) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
 			value[0] = x.data_4.x;
 			value[1] = x.data_4.y;
 			value[2] = x.data_4.z;
@@ -702,9 +737,18 @@ void _stdcall RenderSystem::getUniform4f(unsigned int this_, unsigned int progra
 	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
 	((RenderSystem*)this_)->Error = true;
 }
-int _stdcall RenderSystem::getUniform1i(unsigned int this_, unsigned int program, unsigned int name) {
+int _stdcall RenderSystem::getUniform1i(unsigned int this_, unsigned int name) {
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Width")) {
+		return ((RenderSystem*)this_)->Render_Width;
+	}
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Height")) {
+		return ((RenderSystem*)this_)->Render_Height;
+	}
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.WorkGroupSize")) {
+		return ((RenderSystem*)this_)->computeShader_workgroup_size;
+	}
 	for (auto& x : ((RenderSystem*)this_)->vars) {
-		if (x.name == name) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
 			return x.data_int;
 		}
 	}
@@ -712,9 +756,9 @@ int _stdcall RenderSystem::getUniform1i(unsigned int this_, unsigned int program
 	((RenderSystem*)this_)->Error = true;
 	return 0;
 }
-void _stdcall RenderSystem::getUniformMatrix2x2f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+void _stdcall RenderSystem::getUniformMatrix2x2f(unsigned int this_, unsigned int name, double* value) {
 	for (auto& x : ((RenderSystem*)this_)->vars) {
-		if (x.name == name) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
 			std::copy(std::begin(x.data_matrix2x2), std::end(x.data_matrix2x2), value);
 			return;
 		}
@@ -722,9 +766,15 @@ void _stdcall RenderSystem::getUniformMatrix2x2f(unsigned int this_, unsigned in
 	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
 	((RenderSystem*)this_)->Error = true;
 }
-void _stdcall RenderSystem::getUniformMatrix3x3f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+void _stdcall RenderSystem::getUniformMatrix3x3f(unsigned int this_, unsigned int name, double* value) {
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Camera.rot")) {
+		double v[3][3];
+		((RenderSystem*)this_)->camera.getRotationMatrix(&v[0][0]);
+		std::copy(&v[0][0], &v[0][0] + 9, value);
+		return;
+	}
 	for (auto& x : ((RenderSystem*)this_)->vars) {
-		if (x.name == name) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
 			std::copy(std::begin(x.data_matrix3x3), std::end(x.data_matrix3x3), value);
 			return;
 		}
@@ -732,9 +782,15 @@ void _stdcall RenderSystem::getUniformMatrix3x3f(unsigned int this_, unsigned in
 	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
 	((RenderSystem*)this_)->Error = true;
 }
-void _stdcall RenderSystem::getUniformMatrix4x4f(unsigned int this_, unsigned int program, unsigned int name, double* value) {
+void _stdcall RenderSystem::getUniformMatrix4x4f(unsigned int this_, unsigned int name, double* value) {
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Camera.mat")) {
+		double v[4][4];
+		((RenderSystem*)this_)->camera.getMatrix(&v[0][0]);
+		std::copy(&v[0][0], &v[0][0] + 16, value);
+		return;
+	}
 	for (auto& x : ((RenderSystem*)this_)->vars) {
-		if (x.name == name) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
 			std::copy(std::begin(x.data_matrix4x4), std::end(x.data_matrix4x4), value);
 			return;
 		}
@@ -742,10 +798,22 @@ void _stdcall RenderSystem::getUniformMatrix4x4f(unsigned int this_, unsigned in
 	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
 	((RenderSystem*)this_)->Error = true;
 }
+
+void _stdcall getUniformArrayI(unsigned int this_, unsigned int name, int* Array) {
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.KeyBoard")) {
+		for (size_t i = 0; i < 256; i++) {
+			Array[i] = ((RenderSystem*)this_)->Render_KeyBoard[i];
+		}
+		return;
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+}
+
 unsigned int _stdcall RenderSystem::getShader(unsigned int this_, unsigned int name) {
 	for (size_t i = 0; i < ((RenderSystem*)this_)->ComputeShadersName.size(); i++) {
 		if (((RenderSystem*)this_)->ComputeShadersName[i] == (std::wstring)(wchar_t*)name) {
-			return ((RenderSystem*)this_)->ComputeShaders[i];
+			return ((RenderSystem*)this_)->ComputePrograms[i];
 		}
 	}
 	((RenderSystem*)this_)->info((L"未知Shader:" + (std::wstring)(wchar_t*)name).c_str());

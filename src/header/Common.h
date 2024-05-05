@@ -22,6 +22,9 @@ struct GLRECT
 	float h{};
 };
 
+
+
+
 class GLCharacterList {
 public:
 	std::unordered_map<int, int> list{};

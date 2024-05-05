@@ -1,8 +1,10 @@
 #pragma once
 #include "../Common.h"
 #include "../shader.h"
+#include "camera.h"
 #include "precompile.h"
 #include <unordered_set>
+#include <exception>
 using namespace MLang;
 
 struct vec4
@@ -126,14 +128,14 @@ public:
 			int data_int;
 			float data_matrix2x2[4];
 			float data_matrix3x3[9];
-			float data_matrix4x4[16];
+			float data_matrix4x4[16]{};
 			vec4 data_color4;
 			vec3 data_color3;
 			texture data_tex;
 			GLImage data_image;
 		};
-		VarType type;
-		std::wstring name;
+		VarType type{};
+		std::wstring name{};
 		union {
 			vec4 default_4;
 			vec3 default_3;
@@ -142,15 +144,13 @@ public:
 			int default_int;
 			float default_matrix2x2[4];
 			float default_matrix3x3[9];
-			float default_matrix4x4[16];
+			float default_matrix4x4[16]{};
 			vec4 default_color4;
 			vec3 default_color3;
 			texture default_tex;
 			GLImage default_image;
 		};
 		var() {
-			memset(this, 0, sizeof(var));
-		
 		}
 		~var() {}
 		void release() {
@@ -172,13 +172,54 @@ public:
 			}
 		}
 		var(const var& v) {
-			memcpy(this, &v, sizeof(var));
-			if (type == TEXTURE1D || type == TEXTURE2D || type == TEXTURE3D) {
+			switch (v.type)
+			{
+			case VEC4:
+				data_4 = v.data_4;
+				break;
+			case VEC3:
+				data_3 = v.data_3;
+				break;
+			case VEC2:
+				data_2 = v.data_2;
+				break;
+			case FLOAT:
+				data_1 = v.data_1;
+				break;
+			case MATRIX2x2:
+				memcpy(data_matrix2x2, v.data_matrix2x2, sizeof(data_matrix2x2));
+				break;
+			case MATRIX3x3:
+				memcpy(data_matrix3x3, v.data_matrix3x3, sizeof(data_matrix3x3));
+				break;
+			case MATRIX4x4:
+				memcpy(data_matrix4x4, v.data_matrix4x4, sizeof(data_matrix4x4));
+				break;
+			case INT:
+				data_int = v.data_int;
+				break;
+			case COLOR3:
+				data_color3 = v.data_color3;
+				break;
+			case COLOR4:
+				data_color4 = v.data_color4;
+				break;
+			case TEXTURE1D:
+			case TEXTURE2D:
+			case TEXTURE3D:
 				data_tex = v.data_tex;
-			}
-			if (type == IMAGE1D || type == IMAGE2D || type == IMAGE3D) {
+				break;
+			case IMAGE1D:
+			case IMAGE2D:
+			case IMAGE3D:
 				data_image = v.data_image;
+				break;
+			
+			default:
+				break;
 			}
+			type = v.type;
+			name = v.name;
 		}
 
 	};
@@ -213,6 +254,16 @@ private:
 	x86Runner runner{};
 public:
 	unsigned int computeShader_workgroup_size = 16;
+	Camera camera{};
+	int Render_Width = 512;
+	int Render_Height = 512;
+	double Render_Time = 0;
+
+	int Render_KeyBoard[256];
+	int Render_Mouse[3];
+	double Render_MousePos[2];
+
+
 	bool build(std::wstring ProjectFile);
 	void enterUpdate();
 	void update();
@@ -240,15 +291,16 @@ public:
 	static void _stdcall uniformMatrix2x2f(unsigned int this_, unsigned int program, unsigned int name, double* value);
 	static void _stdcall uniformMatrix3x3f(unsigned int this_, unsigned int program, unsigned int name, double* value);
 	static void _stdcall uniformMatrix4x4f(unsigned int this_, unsigned int program, unsigned int name, double* value);
-	static void _stdcall compute(unsigned int this_, unsigned int program, unsigned int width, unsigned int height, unsigned int depth);
+	static void _stdcall compute(unsigned int this_, unsigned int program, unsigned int width, unsigned int height, unsigned int depth, unsigned int g_w, unsigned int g_h, unsigned int g_d);
 	static void _stdcall bindProgram(unsigned int this_, unsigned int program);
-	static void _stdcall getUniform1f(unsigned int this_, unsigned int program, unsigned int name, double* value);
-	static int _stdcall getUniform1i(unsigned int this_, unsigned int program, unsigned int name);
-	static void _stdcall getUniform2f(unsigned int this_, unsigned int program, unsigned int name, double* value);
-	static void _stdcall getUniform3f(unsigned int this_, unsigned int program, unsigned int name, double* value);
-	static void _stdcall getUniform4f(unsigned int this_, unsigned int program, unsigned int name, double* value);
-	static void _stdcall getUniformMatrix2x2f(unsigned int this_, unsigned int program, unsigned int name, double* value);
-	static void _stdcall getUniformMatrix3x3f(unsigned int this_, unsigned int program, unsigned int name, double* value);
-	static void _stdcall getUniformMatrix4x4f(unsigned int this_, unsigned int program, unsigned int name, double* value);
+	static void _stdcall getUniform1f(unsigned int this_, unsigned int name, double* value);
+	static int _stdcall getUniform1i(unsigned int this_, unsigned int name);
+	static void _stdcall getUniformArrayI(unsigned int this_, unsigned int name, int* Array);
+	static void _stdcall getUniform2f(unsigned int this_, unsigned int name, double* value);
+	static void _stdcall getUniform3f(unsigned int this_, unsigned int name, double* value);
+	static void _stdcall getUniform4f(unsigned int this_, unsigned int name, double* value);
+	static void _stdcall getUniformMatrix2x2f(unsigned int this_, unsigned int name, double* value);
+	static void _stdcall getUniformMatrix3x3f(unsigned int this_, unsigned int name, double* value);
+	static void _stdcall getUniformMatrix4x4f(unsigned int this_, unsigned int name, double* value);
 	static unsigned int _stdcall getShader(unsigned int this_, unsigned int name);
 };
