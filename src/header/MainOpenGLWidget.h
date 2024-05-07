@@ -8,7 +8,7 @@
 #include "shader.h"
 #include <QtCore/qcommandlineoption.h>
 #include <QtCore/qcommandlineparser.h>
-
+#include <QtCore/QTime>
 
 
 class MainOpenGLWidget : public QOpenGLWidget, QOpenGLFunctions_4_5_Compatibility

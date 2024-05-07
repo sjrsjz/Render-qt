@@ -9,6 +9,7 @@ lstring MLangError{};
 
 RenderSystem renderSystem;
 
+bool SettedUp = false;
 
 Render_qt::Render_qt(QWidget *parent)
     : QMainWindow(parent, Qt::FramelessWindowHint | Qt::Window | Qt::WindowMinimizeButtonHint)
@@ -75,6 +76,20 @@ Render_qt::Render_qt(QWidget *parent)
     Main_TitleBar.background_color[3] = 0.5;
     Main_TitleBar.size = 35.0f;
 
+    Main_Status.XOffset = 0;
+    Main_Status.YOffset = 0;
+    Main_Status.visible = true;
+    Main_Status.text_color[0] = 1;
+    Main_Status.text_color[1] = 1;
+    Main_Status.text_color[2] = 1;
+    Main_Status.text_color[3] = 1;
+    Main_Status.background_color[0] = 0;
+    Main_Status.background_color[1] = 0;
+    Main_Status.background_color[2] = 0;
+    Main_Status.background_color[3] = 0;
+    Main_Status.size = 25.0f;
+
+
 }
 Render_qt::~Render_qt()
 {
@@ -106,19 +121,44 @@ int DragStartX = 0;
 int DragStartY = 0;
 int DragStartW = 0;
 int DragStartH = 0;
-
+extern int StartUp_Width;
+extern int StartUp_Height;
 void Render_qt::paintEvent(QPaintEvent* e)
 {
 
 }
 
+void Render_qt::updateStatus() {
+    std::wstring s;
+    s += L"Time:" + std::to_wstring(renderSystem.Render_Time) + L"\n";
+    s += L"FPS:" + std::to_wstring(1.0 / renderSystem.Render_dTime) + L"\n";
+    s += L"MouseX:" + std::to_wstring(Cursor_X) + L"\n";
+    s += L"MouseY:" + std::to_wstring(Cursor_Y) + L"\n";
+    s += L"Render Width:" + std::to_wstring(ui.openGLWidget->width()) + L"\n";
+    s += L"Render Height:" + std::to_wstring(ui.openGLWidget->height()) + L"\n";
+    s += L"Window Width:" + std::to_wstring(width()) + L"\n";
+    s += L"Window Height:" + std::to_wstring(height()) + L"\n";
+    s += L"Image Width:" + std::to_wstring(renderSystem.Render_Width) + L"\n";
+    s += L"Image Height:" + std::to_wstring(renderSystem.Render_Height) + L"\n";
+
+    Main_Status.UpdateText(s);
+}
+
 
 void Render_qt::updateGLUI() {
+    updateStatus();
+
+    if (!SettedUp) {
+        resize(StartUp_Width, StartUp_Height);
+        setMinimumHeight(16*9);
+        setMinimumWidth(256);
+        SettedUp = true;
+    }
     ui.openGLWidget->update();
     Cursor_X = this->mapFromGlobal(QCursor().pos()).x();
     Cursor_Y = ui.centralWidget->height() - this->mapFromGlobal(QCursor().pos()).y();
     DWORD tick = GetTickCount();
-    MouseInTitleBar = Cursor_Y > ui.centralWidget->height() - Main_Exit.rect.h && Cursor_Y <= ui.centralWidget->height() - BorderThickness && Cursor_X > BorderThickness && Cursor_X < ui.centralWidget->width() - BorderThickness;
+    MouseInTitleBar = this->underMouse() && (Cursor_Y > ui.centralWidget->height() - Main_Exit.rect.h && Cursor_Y <= ui.centralWidget->height() - BorderThickness && Cursor_X > BorderThickness && Cursor_X < ui.centralWidget->width() - BorderThickness);
     if (MouseInTitleBar && !lMouseInTitleBar) {
         TitleBarMove.NewEndPositon(ui.openGLWidget->height() - Main_Exit.rect.h, tick);
     }
@@ -138,6 +178,8 @@ void Render_qt::updateGLUI() {
     Main_Maximize.rect.y = TitleBarMove.X();
     Main_Minimize.rect.y = TitleBarMove.X();
     Main_TitleBar.rect.y = TitleBarMove.X();
+    Main_Status.rect.w = ui.openGLWidget->width();
+    Main_Status.rect.h = ui.openGLWidget->height();
 
     lMouseInTitleBar = MouseInTitleBar;
 

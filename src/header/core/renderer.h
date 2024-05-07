@@ -5,6 +5,9 @@
 #include "precompile.h"
 #include <unordered_set>
 #include <exception>
+
+#include <QtCore/qcommandlineoption.h>
+#include <QtCore/qcommandlineparser.h>
 using namespace MLang;
 
 struct vec4
@@ -258,15 +261,16 @@ public:
 	int Render_Width = 512;
 	int Render_Height = 512;
 	double Render_Time = 0;
+	double Render_dTime = 0;
 
 	int Render_KeyBoard[256];
 	int Render_Mouse[3];
 	double Render_MousePos[2];
-
+	std::vector<std::wstring> Render_CmdLineArgs;
 
 	bool build(std::wstring ProjectFile);
 	void enterUpdate();
-	void update();
+	void update(double dtime);
 	unsigned int leaveUpdate();
 	void create();
 	void release();
@@ -303,4 +307,5 @@ public:
 	static void _stdcall getUniformMatrix3x3f(unsigned int this_, unsigned int name, double* value);
 	static void _stdcall getUniformMatrix4x4f(unsigned int this_, unsigned int name, double* value);
 	static unsigned int _stdcall getShader(unsigned int this_, unsigned int name);
+	static unsigned int  _stdcall getCmdLineArg(unsigned int this_,unsigned int name, unsigned int buffer);
 };

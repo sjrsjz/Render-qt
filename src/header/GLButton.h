@@ -31,9 +31,11 @@ public:
 	float background_color[4];
 	bool visible = true;
 	bool LeftAlign = false;
+	bool TopAlign = false;
 	bool YAlign = false;
 	float YOffset = 0.275;
 	float XOffset = 0.275;
+	GLuint BlendMode = GL_SRC_ALPHA;
 	HDC hDC{};
 	GLButton();
 	~GLButton();

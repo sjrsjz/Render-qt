@@ -13,3 +13,6 @@ main.ml
 include
 ml
 include.ml
+string
+ml
+string.ml

@@ -39,6 +39,7 @@ Shader_Main{
         rs.setI("iH", SizeH);
         rs.setF4("RGBA", RGB[0]);
         rs.setF4("RGBA2", RGB[1]);
+	rs.setF("iTime", rs.getFloat("System.Renderer.Time"));
         rs.compute(SizeW, SizeH, 1, GroupSize, GroupSize, GroupSize);
         rs.Shader(0);
         return(1);//if zero,then keep updating

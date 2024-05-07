@@ -31,6 +31,7 @@ extern GLButton Main_Exit;
 extern GLButton Main_Minimize;
 extern GLButton Main_Maximize;
 extern GLButton Main_TitleBar;
+extern GLButton Main_Status;
 extern int Cursor_X;
 extern int Cursor_Y;
 
@@ -49,6 +50,7 @@ public:
     void mousePressEvent(QMouseEvent* event);
     void mouseDoubleClickEvent(QMouseEvent* event);
     void updateGLUI();
+    void updateStatus();
     void paintEvent(QPaintEvent* e);
     bool nativeEvent(const QByteArray& eventType, void* message, long* result);
 private:

@@ -1,3 +1,5 @@
+#include<"string.ml">;
+
 N:DefaultSize;
 N:DefaultPixelSize;
 N:DefaultLineSize;
@@ -129,6 +131,11 @@ Class:RenderSystemInterface{
     Traced Public getI(N:str)->Z:={
         return(getUniform1i(_this, str))
     }
+    Traced Public CmdArg(N:name)->string:={
+        B:buffer[2048];
+        getCmdLineArg(_this,name,buffer);
+        return(string(buffer))
+    }
     Traced Public setVec4(N:str,vec4:vec)->N:={uniform4f(_this,Program,str,vec.x,vec.y,vec.z,vec.w)}
     Traced Public setVec3(N:str,vec4:vec)->N:={uniform3f(_this,Program,str,vec.x,vec.y,vec.z)}
     Traced Transit "" image1D(N:this_,N:size)->N:={return(sys.getFunction("image1D"))}
@@ -158,6 +165,7 @@ Class:RenderSystemInterface{
     Traced Transit "" getUniformMatrix2x2f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniformMatrix2x2f"))}
     Traced Transit "" getUniformMatrix3x3f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniformMatrix3x3f"))}
     Traced Transit "" getUniformMatrix4x4f(N:this_,N:str,N:v)->N:={return(sys.getFunction("getUniformMatrix4x4f"))}
+    Traced Transit "" getCmdLineArg(N:this_,N:str,N:v)->N:={return(sys.getFunction("getCmdLineArg"))}
 }
 
 

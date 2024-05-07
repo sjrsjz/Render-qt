@@ -5,10 +5,15 @@ extern GLButton Main_Exit;
 extern GLButton Main_Minimize;
 extern GLButton Main_Maximize;
 extern GLButton Main_TitleBar;
+extern GLButton Main_Status;
 
 extern RenderSystem renderSystem;
 
+extern bool DisableBackgroundBlur;
+extern int StartUp_Width;
+extern int StartUp_Height;
 
+static double lastTime = 0;
 void __stdcall GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
 	OutputDebugStringA(message);
 	OutputDebugStringA("\n");
@@ -106,7 +111,7 @@ void MainOpenGLWidget::initializeGL()
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback((GLDEBUGPROC)GLDebugMessageCallback, nullptr);
 	//set clear color
-
+	DisableBackgroundBlur = false;
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	GLhFont = CreateFontW(1, 1, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, 2, 54, L"Î¢ÈíÑÅºÚ");
@@ -130,6 +135,16 @@ void MainOpenGLWidget::initializeGL()
 	Main_TitleBar.UpdateText(L"Render(Qt version)");
 	Main_TitleBar.LeftAlign = true;
 
+	Main_Status.hDC = hDC;
+	Main_Status.context = context;
+	Main_Status.UpdateText(L"Status: Ready");
+	Main_Status.LeftAlign = true;
+	Main_Status.TopAlign = true;
+	Main_Status.XOffset = 0.25;
+	Main_Status.visible = false;
+	Main_Status.BlendMode = GL_FUNC_REVERSE_SUBTRACT;
+
+
 	shader.gl = context->functions();
 	shader.init();
 	QRect rect = QGuiApplication::primaryScreen()->geometry();
@@ -147,22 +162,60 @@ void MainOpenGLWidget::initializeGL()
 	renderSystem.shader.init();
 
 	renderSystem.info_callback = infoCallback;
-
-	QCommandLineOption option("file", "The file to open.", "file");
-	QCommandLineParser parser;
-	parser.addOption(option);
-	parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
-	try{
-		parser.process(QCoreApplication::arguments());
+	
+	QStringList args = QCoreApplication::arguments();
+	std::vector<std::wstring> argv;
+	for (auto& x : args) {
+		argv.push_back(x.toStdWString());
 	}
-	catch (std::exception e) {
-		std::cout << e.what() << std::endl;
-		exit(1);
+	bool a = false;
+	try {
+		for (size_t i{}; i < argv.size(); i++) {
+			auto& x = argv[i];
+			if (x == L"--debug") {
+				renderSystem.info_callback = infoCallback;
+				Main_Status.visible = true;
+			}
+			if (x == L"--fullscreen") {
+				renderSystem.Render_Width = rect.width();
+				renderSystem.Render_Height = rect.height();
+			}
+			if (x == L"--width") {
+				i++;
+				renderSystem.Render_Width = std::stoi(argv[i]);
+			}
+			if (x == L"--height") {
+				i++;
+				renderSystem.Render_Height = std::stoi(argv[i]);
+			}
+			if (x == L"--window_width") {
+				i++;
+				StartUp_Width = std::stoi(argv[i]);
+			}
+			if (x == L"--window_height") {
+				i++;
+				StartUp_Height = std::stoi(argv[i]);
+			}
+			if (x == L"--file") {
+				i++;
+				renderSystem.build(argv[i]);
+				a = true;
+			}
+			if (x == L"--no_background_blur") {
+				DisableBackgroundBlur = true;
+			}
+		}
 	}
-	QString file = parser.value(option);
-
-	renderSystem.build(file.toStdWString());
-
+	catch (...) {
+		renderSystem.info(L"Error in command line arguments");
+		return;
+	}
+	if (!a) {
+		renderSystem.info(L"Please specify a project file");
+		return;
+	}
+	renderSystem.Render_CmdLineArgs = argv;
+	lastTime = QTime::currentTime().msecsSinceStartOfDay() / 1000.0;
 	renderSystem.create();
 }
 void MainOpenGLWidget::resizeGL(int w, int h)
@@ -261,6 +314,7 @@ void MainOpenGLWidget::DrawBorder() {
 
 }
 void MainOpenGLWidget::PaintUI() {
+	Main_Status.Draw();
 	Main_Exit.Draw();
 	Main_Maximize.Draw();
 	Main_Minimize.Draw();
@@ -269,8 +323,11 @@ void MainOpenGLWidget::PaintUI() {
 
 void MainOpenGLWidget::DrawScene() {
 	if (renderSystem.Error) return;
+	double ltime = lastTime;
 	renderSystem.enterUpdate();
-	renderSystem.update();
+	double currentTime = QTime::currentTime().msecsSinceStartOfDay() / 1000.0;
+	renderSystem.update(currentTime-ltime);
+	lastTime=currentTime;
 	DrawFullWindowTexture(renderSystem.leaveUpdate(), false);
 
 }	
@@ -316,7 +373,8 @@ void MainOpenGLWidget::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	DrawBlurredBackground();
+	if(!DisableBackgroundBlur)
+		DrawBlurredBackground();
 	DrawScene();
 	PaintUI();
 	DrawBorder();

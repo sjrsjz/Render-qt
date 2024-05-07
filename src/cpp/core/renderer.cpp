@@ -488,6 +488,7 @@ unsigned int _stdcall RenderSystem::functions(unsigned int this_, unsigned int f
 	if (func == L"getUniformMatrix3x3f") return (unsigned int)RenderSystem::getUniformMatrix3x3f;
 	if (func == L"getUniformMatrix4x4f") return (unsigned int)RenderSystem::getUniformMatrix4x4f;
 	if (func == L"getShader") return (unsigned int)RenderSystem::getShader;
+	if (func == L"getCmdLineArg") return (unsigned int)RenderSystem::getCmdLineArg;
 	throw L"未知函数" + func;
 	return 0;
 }
@@ -601,8 +602,10 @@ void RenderSystem::enterUpdate() {
 		}
 	}
 }
-void RenderSystem::update() {
+void RenderSystem::update(double dtime) {
 	_set_se_translator(sehTranslator);
+	Render_Time += dtime;
+	Render_dTime = dtime;
 	if (frameUpdate && !Error) {
 		try {
 			while(!frameUpdate() && !Error);
@@ -630,6 +633,7 @@ unsigned int RenderSystem::leaveUpdate() {
 	return 0;
 }
 void RenderSystem::create() {
+	Render_Time = 0;
 	_set_se_translator(sehTranslator);
 	if(Error) return;
 	try {
@@ -691,6 +695,11 @@ void RenderSystem::updateVar(const wchar_t* name) {
 void _stdcall RenderSystem::getUniform1f(unsigned int this_, unsigned int name, double* value) {
 	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Time")) {
 		*value = ((RenderSystem*)this_)->Render_Time;
+		return;
+	}
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.dTime")) {
+		*value = ((RenderSystem*)this_)->Render_dTime;
+		return;
 	}
 	for (auto& x : ((RenderSystem*)this_)->vars) {
 		if (x.name == (std::wstring)(wchar_t*)name) {
@@ -817,6 +826,25 @@ unsigned int _stdcall RenderSystem::getShader(unsigned int this_, unsigned int n
 		}
 	}
 	((RenderSystem*)this_)->info((L"未知Shader:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+	return 0;
+}
+unsigned int _stdcall RenderSystem::getCmdLineArg(unsigned int this_, unsigned int name, unsigned int buffer) {
+	std::wstring name_ = L"--" + (std::wstring)(wchar_t*)name;
+	try {
+		for (size_t i{}; i < ((RenderSystem*)this_)->Render_CmdLineArgs.size(); i++) {
+			if (((RenderSystem*)this_)->Render_CmdLineArgs[i] == name_) {
+				i++;
+				std::wstring arg = ((RenderSystem*)this_)->Render_CmdLineArgs[i];
+				//copy to buffer
+				std::copy(arg.begin(), arg.end(), (wchar_t*)buffer);
+				((wchar_t*)buffer)[arg.size()] = 0;
+				return 1;
+			}
+		}
+	}
+	catch (...) {};
+	((RenderSystem*)this_)->info((L"未知命令行参数:" + (std::wstring)(wchar_t*)name).c_str());
 	((RenderSystem*)this_)->Error = true;
 	return 0;
 }
