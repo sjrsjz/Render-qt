@@ -49,6 +49,7 @@ public:
     void mouseMoveEvent(QMouseEvent* event);
     void mousePressEvent(QMouseEvent* event);
     void mouseDoubleClickEvent(QMouseEvent* event);
+    void wheelEvent(QWheelEvent* event);
     void updateGLUI();
     void updateStatus();
     void paintEvent(QPaintEvent* e);

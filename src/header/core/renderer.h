@@ -1,6 +1,7 @@
 #pragma once
 #include "../Common.h"
 #include "../shader.h"
+#include "../UIEffect.h"
 #include "camera.h"
 #include "precompile.h"
 #include <unordered_set>
@@ -266,6 +267,11 @@ public:
 	int Render_KeyBoard[256];
 	int Render_Mouse[3];
 	double Render_MousePos[2];
+	int Render_MousePosInt[2];
+
+	SmoothMove Render_SmoothScale;
+
+
 	std::vector<std::wstring> Render_CmdLineArgs;
 
 	bool build(std::wstring ProjectFile);

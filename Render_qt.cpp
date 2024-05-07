@@ -89,6 +89,8 @@ Render_qt::Render_qt(QWidget *parent)
     Main_Status.background_color[3] = 0;
     Main_Status.size = 25.0f;
 
+    renderSystem.Render_SmoothScale.SetTotalDuration(100);
+    renderSystem.Render_SmoothScale.SetStartPosition(1.0, GetTickCount());
 
 }
 Render_qt::~Render_qt()
@@ -140,7 +142,7 @@ void Render_qt::updateStatus() {
     s += L"Window Height:" + std::to_wstring(height()) + L"\n";
     s += L"Image Width:" + std::to_wstring(renderSystem.Render_Width) + L"\n";
     s += L"Image Height:" + std::to_wstring(renderSystem.Render_Height) + L"\n";
-
+    s += L"SmoothScale:" + std::to_wstring(renderSystem.Render_SmoothScale.X()) + L"\n";
     Main_Status.UpdateText(s);
 }
 
@@ -157,6 +159,16 @@ void Render_qt::updateGLUI() {
     ui.openGLWidget->update();
     Cursor_X = this->mapFromGlobal(QCursor().pos()).x();
     Cursor_Y = ui.centralWidget->height() - this->mapFromGlobal(QCursor().pos()).y();
+    renderSystem.Render_MousePos[0] = double(Cursor_X) / ui.centralWidget->width();
+    renderSystem.Render_MousePos[1] = double(Cursor_Y) / ui.centralWidget->height();
+    renderSystem.Render_MousePosInt[0] = Cursor_X;
+    renderSystem.Render_MousePosInt[1] = Cursor_Y;
+
+    Qt::MouseButtons buttons = QApplication::mouseButtons();
+    renderSystem.Render_Mouse[0] = buttons.testFlag(Qt::LeftButton);
+    renderSystem.Render_Mouse[1] = buttons.testFlag(Qt::RightButton);
+    renderSystem.Render_Mouse[2] = buttons.testFlag(Qt::MiddleButton);
+   
     DWORD tick = GetTickCount();
     MouseInTitleBar = this->underMouse() && (Cursor_Y > ui.centralWidget->height() - Main_Exit.rect.h && Cursor_Y <= ui.centralWidget->height() - BorderThickness && Cursor_X > BorderThickness && Cursor_X < ui.centralWidget->width() - BorderThickness);
     if (MouseInTitleBar && !lMouseInTitleBar) {
@@ -172,6 +184,8 @@ void Render_qt::updateGLUI() {
     else {
         TitleBarMove.SetTotalDuration(500);
     }
+    renderSystem.Render_SmoothScale.Update(GetTickCount());
+
 
     TitleBarMove.Update(tick);
     Main_Exit.rect.y = TitleBarMove.X();
@@ -273,6 +287,13 @@ void Render_qt::mousePressEvent(QMouseEvent* e) {
         DragStartX = this->x();
         DragStartY = this->y();
     }
+}
+
+void Render_qt::wheelEvent(QWheelEvent* e) {
+    if(e->delta()>0)
+		renderSystem.Render_SmoothScale.NewEndPositon(renderSystem.Render_SmoothScale.X() / 1.5, GetTickCount());
+	else
+        renderSystem.Render_SmoothScale.NewEndPositon(renderSystem.Render_SmoothScale.X() * 1.5, GetTickCount());
 }
 
 void Render_qt::mouseMoveEvent(QMouseEvent* e) {

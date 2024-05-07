@@ -7,7 +7,7 @@ layout (rgba32f,binding=2) uniform image2D data_;
 uniform vec4 RGBA;
 uniform vec4 RGBA2;
 uniform float iTime;
-
+uniform float iScale;
 vec3 ToRGB(float _A_,float _B_,vec3 _RGB_,vec3 _RGB2_){
     float _co_=max(_A_+1.0- log(.5*log(_B_)),0);
     _co_ = sqrt(_co_/256.0);
@@ -33,7 +33,7 @@ vec2 cDiv(vec2 a, vec2 b){
 }
 
 vec4 color(vec2 pos){
-    pos*=1.5;
+    pos*=iScale;
     vec4 Calc;
     pos*=2;
     int S=200;

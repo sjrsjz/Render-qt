@@ -701,6 +701,10 @@ void _stdcall RenderSystem::getUniform1f(unsigned int this_, unsigned int name, 
 		*value = ((RenderSystem*)this_)->Render_dTime;
 		return;
 	}
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Scale")) {
+		*value = ((RenderSystem*)this_)->Render_SmoothScale.X();
+		return;
+	}
 	for (auto& x : ((RenderSystem*)this_)->vars) {
 		if (x.name == (std::wstring)(wchar_t*)name) {
 			*value = x.data_1;
@@ -734,6 +738,20 @@ void _stdcall RenderSystem::getUniform3f(unsigned int this_, unsigned int name, 
 	((RenderSystem*)this_)->Error = true;
 }
 void _stdcall RenderSystem::getUniform4f(unsigned int this_, unsigned int name, double* value) {
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Mouse.Position")) {
+		value[0] = ((RenderSystem*)this_)->Render_MousePos[0];
+		value[1] = ((RenderSystem*)this_)->Render_MousePos[1];
+		value[2] = ((RenderSystem*)this_)->Render_MousePosInt[0];
+		value[3] = ((RenderSystem*)this_)->Render_MousePosInt[1];
+		return;
+	}
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Mouse.Button"))
+	{
+		value[0] = ((RenderSystem*)this_)->Render_Mouse[0];
+		value[1] = ((RenderSystem*)this_)->Render_Mouse[1];
+		value[2] = ((RenderSystem*)this_)->Render_Mouse[2];
+		return;
+	}
 	for (auto& x : ((RenderSystem*)this_)->vars) {
 		if (x.name == (std::wstring)(wchar_t*)name) {
 			value[0] = x.data_4.x;
