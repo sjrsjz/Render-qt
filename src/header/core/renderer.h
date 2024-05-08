@@ -264,7 +264,7 @@ public:
 	double Render_Time = 0;
 	double Render_dTime = 0;
 
-	int Render_KeyBoard[256];
+	int Render_KeyBoard[1024];
 	int Render_Mouse[3];
 	double Render_MousePos[2];
 	int Render_MousePosInt[2];

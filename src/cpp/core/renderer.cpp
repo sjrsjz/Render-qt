@@ -738,6 +738,18 @@ void _stdcall RenderSystem::getUniform3f(unsigned int this_, unsigned int name, 
 	((RenderSystem*)this_)->Error = true;
 }
 void _stdcall RenderSystem::getUniform4f(unsigned int this_, unsigned int name, double* value) {
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Camera.YPR")) {
+		value[0] = ((RenderSystem*)this_)->camera.yaw;
+		value[1] = ((RenderSystem*)this_)->camera.pitch;
+		value[2] = ((RenderSystem*)this_)->camera.roll;
+		return;
+	
+	}
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Camera.XY2D")) {
+		value[0] = ((RenderSystem*)this_)->camera.x_2D;
+		value[1] = ((RenderSystem*)this_)->camera.y_2D;
+		return;
+	}
 	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Mouse.Position")) {
 		value[0] = ((RenderSystem*)this_)->Render_MousePos[0];
 		value[1] = ((RenderSystem*)this_)->Render_MousePos[1];

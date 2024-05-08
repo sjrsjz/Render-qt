@@ -8,6 +8,9 @@ uniform vec4 RGBA;
 uniform vec4 RGBA2;
 uniform float iTime;
 uniform float iScale;
+
+uniform vec4 XY2D;
+
 vec3 ToRGB(float _A_,float _B_,vec3 _RGB_,vec3 _RGB2_){
     float _co_=max(_A_+1.0- log(.5*log(_B_)),0);
     _co_ = sqrt(_co_/256.0);
@@ -33,15 +36,18 @@ vec2 cDiv(vec2 a, vec2 b){
 }
 
 vec4 color(vec2 pos){
+    
     pos*=iScale;
+    pos+=XY2D.xy;
+    pos=abs(pos);
     vec4 Calc;
     pos*=2;
     int S=200;
     vec2 z1=pos;
-    vec2 p=0.5*vec2(cos(iTime),sin(iTime));
+    vec2 p=pos;//0.5*vec2(cos(iTime),sin(iTime));
     int i=0;
     for(i=0;i<=S;i++){
-        z1=(cPow(z1,vec2(2,0)))-0*exp(1)*abs(z1)+p;
+        z1=abs(cPow(z1,vec2(3,0)))-exp(1)*abs(z1)+p;
         if(length(z1)>2) break;
     }
 

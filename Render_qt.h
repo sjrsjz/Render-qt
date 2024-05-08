@@ -50,7 +50,10 @@ public:
     void mousePressEvent(QMouseEvent* event);
     void mouseDoubleClickEvent(QMouseEvent* event);
     void wheelEvent(QWheelEvent* event);
+    void keyPressEvent(QKeyEvent* event);
+    void keyReleaseEvent(QKeyEvent* event);
     void updateGLUI();
+    void updateVariables();
     void updateStatus();
     void paintEvent(QPaintEvent* e);
     bool nativeEvent(const QByteArray& eventType, void* message, long* result);

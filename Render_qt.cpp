@@ -29,8 +29,8 @@ Render_qt::Render_qt(QWidget *parent)
 
     ui.openGLWidget->setGeometry(1, 1, width() - 2, height() - 2);
 
-
-    RenderTimer.setInterval(1000 / 60);
+    QScreen* screen = QGuiApplication::primaryScreen();
+    RenderTimer.setInterval(1000 / screen->refreshRate());
     RenderTimer.start();
     connect(&RenderTimer, &QTimer::timeout, [=]() {
         updateGLUI();
@@ -89,7 +89,7 @@ Render_qt::Render_qt(QWidget *parent)
     Main_Status.background_color[3] = 0;
     Main_Status.size = 25.0f;
 
-    renderSystem.Render_SmoothScale.SetTotalDuration(100);
+    renderSystem.Render_SmoothScale.SetTotalDuration(50);
     renderSystem.Render_SmoothScale.SetStartPosition(1.0, GetTickCount());
 
 }
@@ -119,6 +119,8 @@ bool MouseDrag = false;
 bool DragBorder = false;
 int MouseDragX = 0;
 int MouseDragY = 0;
+int MouseDragX_L = 0;
+int MouseDragY_L = 0;
 int DragStartX = 0;
 int DragStartY = 0;
 int DragStartW = 0;
@@ -134,8 +136,6 @@ void Render_qt::updateStatus() {
     std::wstring s;
     s += L"Time:" + std::to_wstring(renderSystem.Render_Time) + L"\n";
     s += L"FPS:" + std::to_wstring(1.0 / renderSystem.Render_dTime) + L"\n";
-    s += L"MouseX:" + std::to_wstring(Cursor_X) + L"\n";
-    s += L"MouseY:" + std::to_wstring(Cursor_Y) + L"\n";
     s += L"Render Width:" + std::to_wstring(ui.openGLWidget->width()) + L"\n";
     s += L"Render Height:" + std::to_wstring(ui.openGLWidget->height()) + L"\n";
     s += L"Window Width:" + std::to_wstring(width()) + L"\n";
@@ -143,10 +143,47 @@ void Render_qt::updateStatus() {
     s += L"Image Width:" + std::to_wstring(renderSystem.Render_Width) + L"\n";
     s += L"Image Height:" + std::to_wstring(renderSystem.Render_Height) + L"\n";
     s += L"SmoothScale:" + std::to_wstring(renderSystem.Render_SmoothScale.X()) + L"\n";
+    s += L"MousePos:" + std::to_wstring(renderSystem.Render_MousePos[0]) + L"," + std::to_wstring(renderSystem.Render_MousePos[1]) + L"\n";
+    s += L"MousePosInt:" + std::to_wstring(renderSystem.Render_MousePosInt[0]) + L"," + std::to_wstring(renderSystem.Render_MousePosInt[1]) + L"\n";
+    s += L"Mouse:" + std::to_wstring(renderSystem.Render_Mouse[0]) + L"," + std::to_wstring(renderSystem.Render_Mouse[1]) + L"," + std::to_wstring(renderSystem.Render_Mouse[2]) + L"\n";
+    s += L"KeyBoard:";
+    size_t k = 0;
+    for (auto& key : renderSystem.Render_KeyBoard) {
+        if (key != 0) {
+            s += std::to_wstring(k) + L" ";
+        }
+        k++;
+    }
+    s += L"\n";
+
+    s += L"Matrix:\n";
+    double Matrix[16];
+    renderSystem.camera.getMatrix(Matrix);
+    k = 0;
+    for (int i = 0; i < 16; i++) {
+		s += std::to_wstring(Matrix[i]) + L" ";
+        k++;
+        if (k%4 == 0) {
+			s += L"\n";
+			k = 0;
+		}
+	}
+    s += L"\n";
+    s += L"Y/P/R:" + std::to_wstring(renderSystem.camera.yaw) + L"," + std::to_wstring(renderSystem.camera.pitch) + L"," + std::to_wstring(renderSystem.camera.roll) + L"\n";
+    s += L"X/Y 2D:" + std::to_wstring(renderSystem.camera.x_2D) + L"," + std::to_wstring(renderSystem.camera.y_2D) + L"\n";
+    s += L"WorkPath:" + workPath + L"\n";
     Main_Status.UpdateText(s);
 }
 
-
+void Render_qt::updateVariables() {
+    double dX = renderSystem.Render_KeyBoard[Qt::Key_W] - renderSystem.Render_KeyBoard[Qt::Key_S];
+    double dZ = renderSystem.Render_KeyBoard[Qt::Key_A] - renderSystem.Render_KeyBoard[Qt::Key_D];
+    renderSystem.camera.move(renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dX, 0, renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dZ);
+    renderSystem.camera.x_2D -= renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dZ;
+    renderSystem.camera.y_2D += renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dX;
+    double dRoll = renderSystem.Render_KeyBoard[Qt::Key_Q] - renderSystem.Render_KeyBoard[Qt::Key_E];
+    renderSystem.camera.moveRoll(renderSystem.Render_dTime * dRoll * renderSystem.Render_SmoothScale.X());
+}
 void Render_qt::updateGLUI() {
     updateStatus();
 
@@ -185,7 +222,7 @@ void Render_qt::updateGLUI() {
         TitleBarMove.SetTotalDuration(500);
     }
     renderSystem.Render_SmoothScale.Update(GetTickCount());
-
+    updateVariables();
 
     TitleBarMove.Update(tick);
     Main_Exit.rect.y = TitleBarMove.X();
@@ -240,18 +277,27 @@ bool Render_qt::nativeEvent(const QByteArray& eventType, void* message, long* re
 }
 
 
+void Render_qt::keyPressEvent(QKeyEvent* e) {
+    if (e->key() >= sizeof(renderSystem.Render_KeyBoard) / sizeof(renderSystem.Render_KeyBoard[0])) return;
+	renderSystem.Render_KeyBoard[e->key()] = true;
+}
 
+void Render_qt::keyReleaseEvent(QKeyEvent* e) {
+    if (e->key() >= sizeof(renderSystem.Render_KeyBoard) / sizeof(renderSystem.Render_KeyBoard[0])) return;
+	renderSystem.Render_KeyBoard[e->key()] = false;
+}
 
 void Render_qt::mousePressEvent(QMouseEvent* e) {
+    MouseDragX_L = QCursor::pos().x();
+    MouseDragY_L = QCursor::pos().y();
     if (MouseOnBorderE || MouseOnBorderW || MouseOnBorderN || MouseOnBorderS) {
 		DragBorder = true;
-		MouseDragX = QCursor::pos().x();
-		MouseDragY = QCursor::pos().y();
-		DragStartX = this->x();
-		DragStartY = this->y();
+        MouseDragX = MouseDragX_L;
+        MouseDragY = MouseDragY_L;
+        DragStartX = this->x();
+        DragStartY = this->y();
         DragStartW = this->width();
         DragStartH = this->height();
-
 
         DragN = DragW = DragS = DragE = DragNW = DragNE = DragSW = DragSE = false;
 
@@ -335,6 +381,33 @@ void Render_qt::mouseMoveEvent(QMouseEvent* e) {
 
 	}
 	else {
+        QScreen* screen = QGuiApplication::primaryScreen();
+        double dX = double(QCursor::pos().x() - MouseDragX_L) / screen->geometry().height();
+        double dY = double(QCursor::pos().y() - MouseDragY_L) / screen->geometry().height();
+
+        double dX_2D = double(QCursor::pos().x() - MouseDragX_L) / max(this->geometry().width(), this->geometry().height());
+        double dY_2D = double(QCursor::pos().y() - MouseDragY_L) / max(this->geometry().width(), this->geometry().height());
+
+        double scale = renderSystem.Render_SmoothScale.X();
+        if (e->buttons() & Qt::RightButton) {
+			renderSystem.camera.move(0, dY * scale, dX * scale);
+		}
+        else if (e->buttons() & Qt::MiddleButton) {
+			renderSystem.camera.move(dY * scale, 0, dX * scale);
+		}
+        else if (e->buttons() & Qt::LeftButton) {
+            renderSystem.camera.moveYaw(dX * 3.14159265358 * 4);
+            renderSystem.camera.movePitch(dY * 3.14159265358 * 4);
+
+            renderSystem.camera.x_2D -= dX_2D * scale;
+            renderSystem.camera.y_2D += dY_2D * scale;
+
+		}
+        else {
+
+		}        
+        MouseDragX_L = QCursor::pos().x();
+        MouseDragY_L = QCursor::pos().y();
 		QWidget::mouseMoveEvent(e);
 	
     }

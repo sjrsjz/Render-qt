@@ -35,8 +35,8 @@ class Camera
 			roll += amt;
 		}
 
-		void moveX(double amt) { x += amt; x_2D += amt; }
-		void moveY(double amt) { y += amt; y_2D += amt; }
+		void moveX(double amt) { x += amt; }
+		void moveY(double amt) { y += amt; }
 		void moveZ(double amt) { z += amt; }
 		void movePitch(double amt) { pitch += amt; }
 		void moveYaw(double amt) { yaw += amt; }
@@ -52,8 +52,6 @@ class Camera
 			x += dx2;
 			y += dy2;
 			z += dz2;
-			x_2D += dx;
-			y_2D += dy;
 		}
 		void moveForward(double amt) {
 			double dx = amt * cos(yaw) * cos(pitch);

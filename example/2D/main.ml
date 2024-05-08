@@ -39,6 +39,7 @@ Shader_Main{
         rs.setI("iH", SizeH);
         rs.setF4("RGBA", RGB[0]);
         rs.setF4("RGBA2", RGB[1]);
+        rs.setF4("XY2D", rs.getVec4("System.Renderer.Camera.XY2D"));
 	rs.setF("iTime", rs.getFloat("System.Renderer.Time"));
         rs.setF("iScale", rs.getFloat("System.Renderer.Scale"));
         rs.compute(SizeW, SizeH, 1, GroupSize, GroupSize, GroupSize);
