@@ -161,7 +161,25 @@ Class:RenderSystemInterface{
         getTex_(_this, str, t);
         return(t)
     }
- 
+    Traced Public getMat4x4(N:str)->R[16]:={
+        R:v[16];
+        getUniformMatrix4x4f(_this, str, v);
+        return(v)
+    }
+    Traced Public getMat3x3(N:str)->R[9]:={
+        R:v[9];
+        getUniformMatrix3x3f(_this, str, v);
+        return(v)
+    }
+    Traced Public getMat2x2(N:str)->R[4]:={
+        R:v[4];
+        getUniformMatrix2x2f(_this, str, v);
+        return(v)
+    }
+    Traced Public setMat4x4(N:str,R:v[16])->N:={uniformMatrix4x4f(_this,Program,str,v)}
+    Traced Public setMat3x3(N:str,R:v[9])->N:={uniformMatrix3x3f(_this,Program,str,v)}
+    Traced Public setMat2x2(N:str,R:v[4])->N:={uniformMatrix2x2f(_this,Program,str,v)}
+
     Traced Public setVec4(N:str,vec4:vec)->N:={uniform4f(_this,Program,str,vec.x,vec.y,vec.z,vec.w)}
     Traced Public setVec3(N:str,vec4:vec)->N:={uniform3f(_this,Program,str,vec.x,vec.y,vec.z)}
     Traced Transit "" image1D(N:this_,N:size)->N:={return(sys.getFunction("image1D"))}

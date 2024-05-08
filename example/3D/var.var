@@ -1,0 +1,3 @@
+color RGB 1.1 0.75 0.5
+color RGB2 1 1 1
+tex MyTex "D:\VS Projects\Render-qt\example\2D\map.bmp"

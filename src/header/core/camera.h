@@ -42,40 +42,49 @@ class Camera
 		void moveYaw(double amt) { yaw += amt; }
 		void moveRoll(double amt) { roll += amt; }
 		void move(double dx, double dy, double dz) {
-			//以视线方向为x轴，左手坐标系，旋转顺序为yaw,pitch,roll
-			//获得旋转后的dx,dy,dz
-			double dx1 = dx * cos(yaw) + dz * sin(yaw);
-			double dz1 = -dx * sin(yaw) + dz * cos(yaw);
-			double dx2 = dx1 * cos(pitch) - dy * sin(pitch);
-			double dy2 = dx1 * sin(pitch) + dy * cos(pitch);
-			double dz2 = dz1;
+			double m[9];
+			getRotationMatrix(m);
+			double dx2 = m[0] * dx + m[3] * dy + m[6] * dz;
+			double dy2 = m[1] * dx + m[4] * dy + m[7] * dz;
+			double dz2 = m[2] * dx + m[5] * dy + m[8] * dz;
+
 			x += dx2;
 			y += dy2;
 			z += dz2;
+
 		}
 		void moveForward(double amt) {
-			double dx = amt * cos(yaw) * cos(pitch);
-			double dy = amt * sin(pitch);
-			double dz = amt * sin(yaw) * cos(pitch);
-			move(dx, dy, dz);
+			move(amt, 0, 0);
 		}
 		void getRotationMatrix(double* m) {
-			//以视线方向为x轴，左手坐标系，旋转顺序为yaw,pitch,roll
+			//以视线方向为x轴
+			//先绕y轴旋转yaw，再绕z轴旋转pitch，最后绕x轴旋转roll
 			//m[0] m[1] m[2]
 			//m[3] m[4] m[5]
 			//m[6] m[7] m[8]
-			m[0] = cos(yaw) * cos(pitch);
-			m[1] = sin(yaw) * cos(pitch);
-			m[2] = -sin(pitch);
-			m[3] = cos(yaw) * sin(pitch) * sin(roll) - sin(yaw) * cos(roll);
-			m[4] = sin(yaw) * sin(pitch) * sin(roll) + cos(yaw) * cos(roll);
-			m[5] = cos(pitch) * sin(roll);
-			m[6] = cos(yaw) * sin(pitch) * cos(roll) + sin(yaw) * sin(roll);
-			m[7] = sin(yaw) * sin(pitch) * cos(roll) - cos(yaw) * sin(roll);
-			m[8] = cos(pitch) * cos(roll);
+			double cx = cos(roll);
+			double sx = sin(roll);
+			double cy = cos(yaw);
+			double sy = sin(yaw);
+			double cz = cos(pitch);
+			double sz = sin(pitch);
+
+			// 计算旋转矩阵的元素
+			m[0] = cy * cz - sx * sy * sz; // 第一行第一列
+			m[1] = -cx * sz; // 第一行第二列
+			m[2] = sy * cz + sx * cy * sz; // 第一行第三列
+			m[3] = cy * sz + sx * sy * cz; // 第二行第一列
+			m[4] = cx * cz; // 第二行第二列
+			m[5] = sy * sz - sx * cy * cz; // 第二行第三列
+			m[6] = -cx * sy; // 第三行第一列
+			m[7] = sx; // 第三行第二列
+			m[8] = cx * cy; // 第三行第三列
+			
 		}
 		void getMatrix(double* m) {
-			//以视线方向为x轴，左手坐标系，旋转顺序为yaw,pitch,roll
+			//以视线方向为x轴
+			// 先绕y轴旋转yaw，再绕z轴旋转pitch，最后绕x轴旋转roll
+			//获得旋转后的dx,dy,dz
 			//m[0] m[1] m[2] m[3]
 			//m[4] m[5] m[6] m[7]
 			//m[8] m[9] m[10] m[11]

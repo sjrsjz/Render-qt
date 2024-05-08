@@ -81,7 +81,7 @@ void GLButton::Draw() {
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
-	glBlendFunc(BlendMode, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(BlendFactorS, BlendFactorD);
 	glBegin(GL_QUADS);
 	glColor4f(background_color[0], background_color[1], background_color[2], background_color[3]);
 	glVertex3f(WorldPos[0],WorldPos[1],WorldPos[2]);
@@ -137,7 +137,7 @@ void GLButton::Draw() {
 		i++;
 	}
 	glPopMatrix();
-
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_BLEND);
 	glPopMatrix();
 

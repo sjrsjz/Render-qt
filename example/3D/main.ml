@@ -35,15 +35,14 @@ Shader_Main{
         rs.Buf(bufA, 0);
         rs.Buf(bufB, 1);
         rs.Buf(buf2, 2);
-        texture:texA = rs.getTex("MyTex");
-        rs.Tex(texA.ID, 0, texA.dim);
         rs.setI("iW", SizeW);
         rs.setI("iH", SizeH);
         rs.setF4("RGBA", RGB[0]);
         rs.setF4("RGBA2", RGB[1]);
         rs.setF4("XY2D", rs.getVec4("System.Renderer.Camera.XY2D"));
-	rs.setF("iTime", rs.getFloat("System.Renderer.Time"));
+    	rs.setF("iTime", rs.getFloat("System.Renderer.Time"));
         rs.setF("iScale", rs.getFloat("System.Renderer.Scale"));
+        rs.setMat4x4("iMat", rs.getMat4x4("System.Renderer.Camera.Mat"));
         rs.compute(SizeW, SizeH, 1, GroupSize, GroupSize, GroupSize);
         rs.Shader(0);
         return(1);//if zero,then keep updating

@@ -35,7 +35,8 @@ public:
 	bool YAlign = false;
 	float YOffset = 0.275;
 	float XOffset = 0.275;
-	GLuint BlendMode = GL_SRC_ALPHA;
+	GLuint BlendFactorS = GL_SRC_ALPHA;
+	GLuint BlendFactorD = GL_ONE_MINUS_SRC_ALPHA;
 	HDC hDC{};
 	GLButton();
 	~GLButton();

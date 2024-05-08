@@ -3,7 +3,7 @@
 bool texture::loadBmp2D(std::wstring file)
 {
 // Load the bitmap
-	HBITMAP hBmp = (HBITMAP)LoadImage(NULL, file.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+	HBITMAP hBmp = (HBITMAP)LoadImage(NULL, file.c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
 	if (hBmp == NULL)
 	{
 		return false;
@@ -24,8 +24,15 @@ bool texture::loadBmp2D(std::wstring file)
 
 	// Load the texture
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, bmp.bmWidth, bmp.bmHeight, 0, GL_BGR, GL_UNSIGNED_BYTE, bmp.bmBits);
+	glBindTexture(GL_TEXTURE_2D, 0);
 
-	// Release the bitmap
+	width = bmp.bmWidth;
+	height = bmp.bmHeight;
+	depth = 0;
+	dim = texture::DIM::_2D;
+	id = m_texture;
+
+	// 删除原始位图
 	DeleteObject(hBmp);
 
 	return true;
@@ -52,6 +59,8 @@ bool RenderSystem::build(std::wstring ProjectFile) {
 	this->Error = false;
 	//Get the Project Directory
 	_ProjectDir = ProjectFile.substr(0, ProjectFile.find_last_of(L"\\"));
+	//cd to the Project Directory
+	SetCurrentDirectory(_ProjectDir.c_str());
 	_ProjectFile = ProjectFile.substr(ProjectFile.find_last_of(L"\\") + 1);
 	info(L"读取工程文件中...");
 	//Load the Project File
@@ -120,9 +129,10 @@ bool RenderSystem::build(std::wstring ProjectFile) {
 		ComputeShaders.push_back(0);
 		char errbuf[2048];
 		ComputePrograms.push_back(shader.CompileComputeShader(MLang::to_byte_string(x).c_str(), (GLuint*)&ComputeShaders.back(), errbuf));
-		ComputeShadersName.push_back(project.ShaderName[ComputeShadersName.size()]);
+		std::wstring name = project.ShaderName[ComputeShadersName.size()];
+		ComputeShadersName.push_back(name);
 		if (ComputePrograms.back() < 0) {
-			info((L"Shader编译失败:\n" + MLang::to_wide_string((std::string)errbuf)).c_str());
+			info((L"Shader编译失败:" + name + L"\n" + MLang::to_wide_string((std::string)errbuf)).c_str());
 			this->Error = true;
 			return false;
 		}
@@ -187,7 +197,9 @@ Success:
 		if (tokens.size() < 2) continue;
 		std::wstring type = tokens[0];
 		std::wstring name = tokens[1];
-
+		if (type == L";") {
+			continue;
+		}
 		if (type == L"float") {
 			if (tokens.size() < 3) {
 				info((L"变量 " + name + L" 参数过少").c_str());
@@ -489,6 +501,8 @@ unsigned int _stdcall RenderSystem::functions(unsigned int this_, unsigned int f
 	if (func == L"getUniformMatrix4x4f") return (unsigned int)RenderSystem::getUniformMatrix4x4f;
 	if (func == L"getShader") return (unsigned int)RenderSystem::getShader;
 	if (func == L"getCmdLineArg") return (unsigned int)RenderSystem::getCmdLineArg;
+	if (func == L"getImage") return (unsigned int)RenderSystem::getImage;
+	if (func == L"getTex") return (unsigned int)RenderSystem::getTex;
 	throw L"未知函数" + func;
 	return 0;
 }
@@ -532,13 +546,13 @@ void _stdcall RenderSystem::bindTex(unsigned int this_, unsigned int tex, unsign
 	((RenderSystem*)this_)->shader.ex.glActiveTexture(GL_TEXTURE0 + bind);
 	switch (dim)
 	{
-	case 1:
+	case texture::DIM::_1D:
 		glBindTexture(GL_TEXTURE_1D, tex);
 		break;
-	case 2:
+	case texture::DIM::_2D:
 		glBindTexture(GL_TEXTURE_2D, tex);
 		break;
-	case 3:
+	case texture::DIM::_3D:
 		glBindTexture(GL_TEXTURE_3D, tex);
 		break;
 	default:
@@ -806,7 +820,7 @@ void _stdcall RenderSystem::getUniformMatrix2x2f(unsigned int this_, unsigned in
 	((RenderSystem*)this_)->Error = true;
 }
 void _stdcall RenderSystem::getUniformMatrix3x3f(unsigned int this_, unsigned int name, double* value) {
-	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Camera.rot")) {
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Camera.Rot")) {
 		double v[3][3];
 		((RenderSystem*)this_)->camera.getRotationMatrix(&v[0][0]);
 		std::copy(&v[0][0], &v[0][0] + 9, value);
@@ -822,7 +836,7 @@ void _stdcall RenderSystem::getUniformMatrix3x3f(unsigned int this_, unsigned in
 	((RenderSystem*)this_)->Error = true;
 }
 void _stdcall RenderSystem::getUniformMatrix4x4f(unsigned int this_, unsigned int name, double* value) {
-	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Camera.mat")) {
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Camera.Mat")) {
 		double v[4][4];
 		((RenderSystem*)this_)->camera.getMatrix(&v[0][0]);
 		std::copy(&v[0][0], &v[0][0] + 16, value);
@@ -877,4 +891,27 @@ unsigned int _stdcall RenderSystem::getCmdLineArg(unsigned int this_, unsigned i
 	((RenderSystem*)this_)->info((L"未知命令行参数:" + (std::wstring)(wchar_t*)name).c_str());
 	((RenderSystem*)this_)->Error = true;
 	return 0;
+}
+
+
+void _stdcall RenderSystem::getImage(unsigned int this_, unsigned int name, unsigned int* value) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
+			x.data_image.getParameters(value);
+			return;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
+}
+
+void _stdcall RenderSystem::getTex(unsigned int this_, unsigned int name, unsigned int* value) {
+	for (auto& x : ((RenderSystem*)this_)->vars) {
+		if (x.name == (std::wstring)(wchar_t*)name) {
+			x.data_tex.getParameters(value);
+			return;
+		}
+	}
+	((RenderSystem*)this_)->info((L"未知变量:" + (std::wstring)(wchar_t*)name).c_str());
+	((RenderSystem*)this_)->Error = true;
 }

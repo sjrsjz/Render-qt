@@ -142,8 +142,6 @@ void MainOpenGLWidget::initializeGL()
 	Main_Status.TopAlign = true;
 	Main_Status.XOffset = 0.25;
 	Main_Status.visible = false;
-	Main_Status.BlendMode = GL_FUNC_REVERSE_SUBTRACT;
-
 
 	shader.gl = context->functions();
 	shader.init();
@@ -340,12 +338,26 @@ void MainOpenGLWidget::DrawFullWindowTexture(GLuint Tex, bool resize) {
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
+	//draw texture to full window
+	//确保纹理不被拉伸
+
+
 	glBindTexture(GL_TEXTURE_2D, Tex);
+	GLint tex_W{}, tex_H{};
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &tex_W);
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &tex_H);
 	glBegin(GL_QUADS);
-	float scale = resize ? double(height()) / width() : 1;
-	float scale2 = 1;
-	if (!resize && height() > width()) {
-		scale2 = double(height()) / width();
+
+	float scale = double(tex_H) / tex_W;
+	float scale2 = double(height()) / width();
+	if (scale2 < scale) {
+		scale2 = 1;
+	}
+	else {
+		scale2 = scale2 / scale;
+	
 	}
 	glColor4f(1, 1, 1, 1);
 	glTexCoord2f(0, 0);
@@ -357,6 +369,7 @@ void MainOpenGLWidget::DrawFullWindowTexture(GLuint Tex, bool resize) {
 	glTexCoord2f(0, 1);
 	glVertex3f(-scale2, scale * scale2, 0);
 	glEnd();
+
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDisable(GL_TEXTURE_2D);
 	glPopMatrix();
@@ -364,7 +377,7 @@ void MainOpenGLWidget::DrawFullWindowTexture(GLuint Tex, bool resize) {
 
 void MainOpenGLWidget::paintGL()
 {
-	glClearColor(43.f/255.0, 43.f/255.0, 45.f/255.0, 0.0f);
+	glClearColor(43.f/255.0, 43.f/255.0, 45.f/255.0, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();

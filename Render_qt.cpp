@@ -168,7 +168,6 @@ void Render_qt::updateStatus() {
 			k = 0;
 		}
 	}
-    s += L"\n";
     s += L"Y/P/R:" + std::to_wstring(renderSystem.camera.yaw) + L"," + std::to_wstring(renderSystem.camera.pitch) + L"," + std::to_wstring(renderSystem.camera.roll) + L"\n";
     s += L"X/Y 2D:" + std::to_wstring(renderSystem.camera.x_2D) + L"," + std::to_wstring(renderSystem.camera.y_2D) + L"\n";
     s += L"WorkPath:" + workPath + L"\n";
@@ -178,7 +177,7 @@ void Render_qt::updateStatus() {
 void Render_qt::updateVariables() {
     double dX = renderSystem.Render_KeyBoard[Qt::Key_W] - renderSystem.Render_KeyBoard[Qt::Key_S];
     double dZ = renderSystem.Render_KeyBoard[Qt::Key_A] - renderSystem.Render_KeyBoard[Qt::Key_D];
-    renderSystem.camera.move(renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dX, 0, renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dZ);
+    renderSystem.camera.move(renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dX, 0, -renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dZ);
     renderSystem.camera.x_2D -= renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dZ;
     renderSystem.camera.y_2D += renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dX;
     double dRoll = renderSystem.Render_KeyBoard[Qt::Key_Q] - renderSystem.Render_KeyBoard[Qt::Key_E];
@@ -385,12 +384,12 @@ void Render_qt::mouseMoveEvent(QMouseEvent* e) {
         double dX = double(QCursor::pos().x() - MouseDragX_L) / screen->geometry().height();
         double dY = double(QCursor::pos().y() - MouseDragY_L) / screen->geometry().height();
 
-        double dX_2D = double(QCursor::pos().x() - MouseDragX_L) / max(this->geometry().width(), this->geometry().height());
-        double dY_2D = double(QCursor::pos().y() - MouseDragY_L) / max(this->geometry().width(), this->geometry().height());
+        double dX_2D = 2 * double(QCursor::pos().x() - MouseDragX_L) / max(this->geometry().width(), this->geometry().height());
+        double dY_2D = 2 * double(QCursor::pos().y() - MouseDragY_L) / max(this->geometry().width(), this->geometry().height());
 
         double scale = renderSystem.Render_SmoothScale.X();
         if (e->buttons() & Qt::RightButton) {
-			renderSystem.camera.move(0, dY * scale, dX * scale);
+			renderSystem.camera.move(0, dY * scale, -dX * scale);
 		}
         else if (e->buttons() & Qt::MiddleButton) {
 			renderSystem.camera.move(dY * scale, 0, dX * scale);

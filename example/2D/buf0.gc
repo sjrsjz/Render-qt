@@ -4,6 +4,8 @@ layout (rgba32f,binding=0) uniform image2D input_;
 layout (rgba32f,binding=1) uniform image2D output_;
 layout (rgba32f,binding=2) uniform image2D data_;
 
+layout (binding=0) uniform sampler2D tex_;
+
 uniform vec4 RGBA;
 uniform vec4 RGBA2;
 uniform float iTime;
@@ -50,11 +52,14 @@ vec4 color(vec2 pos){
         z1=abs(cPow(z1,vec2(3,0)))-exp(1)*abs(z1)+p;
         if(length(z1)>2) break;
     }
-
-    return vec4(ToRGB(i,dot(z1,z1),RGBA.rgb,RGBA2.rgb),1);
+    vec4 color=vec4(ToRGB(i,dot(z1,z1),RGBA.rgb,RGBA2.rgb),1);
+    color=mix(color,texture(tex_,pos),1);
+    return color;
 }
 
 void main(){
     ivec2 p=ivec2(gl_GlobalInvocationID.xy);
-    imageStore(output_,p,color(vec2(p)/imageSize(output_)*2-1));
+    vec2 s=vec2(p)/imageSize(output_)*2-1;
+    s*=vec2(1,float(imageSize(output_).y)/imageSize(output_).x);
+    imageStore(output_,p,color(s));
 }

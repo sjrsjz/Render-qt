@@ -25,14 +25,19 @@ struct vec2
 };
 class texture
 {
+public:
+	enum DIM {
+		_1D,
+		_2D,
+		_3D,
+	};
 private:
 	std::wstring file{};
 	GLuint id{};
-	enum {
-		_1D = GL_TEXTURE_1D,
-		_2D = GL_TEXTURE_2D,
-		_3D = GL_TEXTURE_3D,
-	} dim;
+	GLuint width{};
+	GLuint height{};
+	GLuint depth{};
+	DIM dim;
 public:
 	bool loadBmp2D(std::wstring file);
 	GLuint getID() { return id; }
@@ -42,6 +47,13 @@ public:
 		if (file == L"" || !id) return;
 		glDeleteTextures(1, &id);
 		file = L"";
+	}
+	void getParameters(unsigned int v[]) {
+		v[0] = id;
+		v[1] = dim;
+		v[2] = width;
+		v[3] = height;
+		v[4] = depth;
 	}
 	~texture() {
 	}
@@ -97,6 +109,14 @@ class GLImage {
 		}
 		void setBinding(GLuint b) {
 			binding = b;
+		}
+		void getParameters(unsigned int v[]) {
+			v[0] = tex;
+			v[1] = type;
+			v[2] = binding;
+			v[3] = width;
+			v[4] = height;
+			v[5] = depth;
 		}
 		~GLImage() {}
 };
@@ -314,4 +334,7 @@ public:
 	static void _stdcall getUniformMatrix4x4f(unsigned int this_, unsigned int name, double* value);
 	static unsigned int _stdcall getShader(unsigned int this_, unsigned int name);
 	static unsigned int  _stdcall getCmdLineArg(unsigned int this_,unsigned int name, unsigned int buffer);
+	static void _stdcall getImage(unsigned int this_, unsigned int name, unsigned int *value);
+	static void _stdcall getTex(unsigned int this_, unsigned int name, unsigned int* value);
+
 };
