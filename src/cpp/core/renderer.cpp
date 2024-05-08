@@ -57,14 +57,27 @@ std::wstring loadFileString(std::wstring file) {
 bool RenderSystem::build(std::wstring ProjectFile) {
 	release();
 	this->Error = false;
+	//get Current Directory
+	std::wstring curr_dir;
+	curr_dir.resize(32767);
+	GetCurrentDirectory(32767, &curr_dir[0]);
 	//Get the Project Directory
 	_ProjectDir = ProjectFile.substr(0, ProjectFile.find_last_of(L"\\"));
+	//get full path
+	std::wstring tmp;
+	tmp.resize(32767);
+	GetFullPathName(_ProjectDir.c_str(), 32767, &tmp[0], NULL);
+	_ProjectDir = tmp;
+	_ProjectDir = (std::wstring)_ProjectDir.c_str();
 	//cd to the Project Directory
 	SetCurrentDirectory(_ProjectDir.c_str());
-	_ProjectFile = ProjectFile.substr(ProjectFile.find_last_of(L"\\") + 1);
-	info(L"读取工程文件中...");
+	_ProjectFile = _ProjectDir + L"\\" + ProjectFile.substr(ProjectFile.find_last_of(L"\\") + 1);
+
+	info(L"读取工程文件中... ");
+	info((L"工程路径: " + _ProjectDir).c_str());
+	info((L"工程文件: " + _ProjectFile).c_str());
 	//Load the Project File
-	std::wifstream Project(ProjectFile);
+	std::wifstream Project(_ProjectFile);
 	if (!Project.is_open()) {
 		info(L"工程文件打开失败");
 		this->Error = true;
