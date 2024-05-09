@@ -10,8 +10,11 @@ uniform vec4 RGBA;
 uniform vec4 RGBA2;
 uniform float iTime;
 uniform float iScale;
+uniform int iFrame;
 
 uniform vec4 XY2D;
+uniform vec4 XY2D_tex;
+uniform vec4 iMouse;
 
 vec3 ToRGB(float _A_,float _B_,vec3 _RGB_,vec3 _RGB2_){
     float _co_=max(_A_+1.0- log(.5*log(_B_)),0);
@@ -38,7 +41,7 @@ vec2 cDiv(vec2 a, vec2 b){
 }
 
 vec4 color(vec2 pos){
-    
+    vec2 pos0=pos;
     pos*=iScale;
     pos+=XY2D.xy;
     pos=abs(pos);
@@ -53,13 +56,37 @@ vec4 color(vec2 pos){
         if(length(z1)>2) break;
     }
     vec4 color=vec4(ToRGB(i,dot(z1,z1),RGBA.rgb,RGBA2.rgb),1);
-    color=mix(color,texture(tex_,pos),1);
+    //color=mix(color,texture(tex_,pos),1);
     return color;
 }
 
+float sdBox( in vec2 p, in vec2 b )
+{
+    vec2 d = abs(p)-b;
+    return length(max(d,vec2(0))) + min(max(d.x,d.y),0.0);
+}
+
+const int AA = 16;
+
 void main(){
+    if(iFrame>=AA*AA){
+        imageStore(output_,ivec2(gl_GlobalInvocationID.xy),imageLoad(input_,ivec2(gl_GlobalInvocationID.xy)));
+        return;
+    }
     ivec2 p=ivec2(gl_GlobalInvocationID.xy);
-    vec2 s=vec2(p)/imageSize(output_)*2-1;
-    s*=vec2(1,float(imageSize(output_).y)/imageSize(output_).x);
-    imageStore(output_,p,color(s));
+
+    vec2 XY01=(XY2D_tex.xy * 0.5 + 0.5)*vec2(imageSize(output_));
+
+    float x_offset = (iFrame%AA)/float(AA);
+    float y_offset = int(iFrame/AA)/float(AA);
+
+    vec2 s=vec2(p+vec2(x_offset,y_offset))/imageSize(output_)*2-1;
+    float d=float(imageSize(output_).y)/imageSize(output_).x;
+    s*=vec2(1,min(1,d));
+    vec4 c=color(s);
+    //c=mix(c,vec4(1,0,0,1),iMouse.x*float(length(XY01-p)));
+    // draw a square at the mouse position
+    c=mix(c,vec4(0,1,0,1),iMouse.x*float(abs(sdBox(XY01-p,vec2(50)))<1));
+    
+    imageStore(output_,p,mix(imageLoad(input_,p),c,1.0/float(iFrame+1)));
 }

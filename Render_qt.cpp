@@ -145,6 +145,7 @@ void Render_qt::updateStatus() {
     s += L"SmoothScale:" + std::to_wstring(renderSystem.Render_SmoothScale.X()) + L"\n";
     s += L"MousePos:" + std::to_wstring(renderSystem.Render_MousePos[0]) + L"," + std::to_wstring(renderSystem.Render_MousePos[1]) + L"\n";
     s += L"MousePosInt:" + std::to_wstring(renderSystem.Render_MousePosInt[0]) + L"," + std::to_wstring(renderSystem.Render_MousePosInt[1]) + L"\n";
+    s += L"MousePosOnTexture:" + std::to_wstring(renderSystem.Render_MousePosOnTexture[0]) + L"," + std::to_wstring(renderSystem.Render_MousePosOnTexture[1]) + L"\n";
     s += L"Mouse:" + std::to_wstring(renderSystem.Render_Mouse[0]) + L"," + std::to_wstring(renderSystem.Render_Mouse[1]) + L"," + std::to_wstring(renderSystem.Render_Mouse[2]) + L"\n";
     s += L"KeyBoard:";
     size_t k = 0;
@@ -171,6 +172,10 @@ void Render_qt::updateStatus() {
     s += L"Y/P/R:" + std::to_wstring(renderSystem.camera.yaw) + L"," + std::to_wstring(renderSystem.camera.pitch) + L"," + std::to_wstring(renderSystem.camera.roll) + L"\n";
     s += L"X/Y 2D:" + std::to_wstring(renderSystem.camera.x_2D) + L"," + std::to_wstring(renderSystem.camera.y_2D) + L"\n";
     s += L"WorkPath:" + workPath + L"\n";
+    s += L"Updated Vars:\n";
+    for (auto& var : renderSystem.updatedVars) {
+		s += var + L"\n";
+	}
     Main_Status.UpdateText(s);
 }
 
@@ -180,8 +185,39 @@ void Render_qt::updateVariables() {
     renderSystem.camera.move(renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dX, 0, -renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dZ);
     renderSystem.camera.x_2D -= renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dZ;
     renderSystem.camera.y_2D += renderSystem.Render_SmoothScale.X() * renderSystem.Render_dTime * dX;
+    if (dX != 0 || dZ != 0) {
+        renderSystem.appendUpdatedVar(L"System.Renderer.Camera.Mat");
+        renderSystem.appendUpdatedVar(L"System.Renderer.Camera.XY2D");
+    }
     double dRoll = renderSystem.Render_KeyBoard[Qt::Key_Q] - renderSystem.Render_KeyBoard[Qt::Key_E];
     renderSystem.camera.moveRoll(renderSystem.Render_dTime * dRoll * renderSystem.Render_SmoothScale.X());
+    if (dRoll != 0) {
+		renderSystem.appendUpdatedVar(L"System.Renderer.Camera.Mat");
+        renderSystem.appendUpdatedVar(L"System.Renderer.Camera.Rot");
+        renderSystem.appendUpdatedVar(L"System.Renderer.Camera.YPR");
+	}
+
+    GLuint tex_W{}, tex_H{};
+    glBindTexture(GL_TEXTURE_2D, renderSystem.getCurrentTexture());
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, (GLint*)&tex_W);
+    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, (GLint*)&tex_H);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+
+    float scale = double(tex_H) / tex_W;
+    float scale2 = double(ui.openGLWidget->height()) / ui.openGLWidget->width();
+    if (scale2 < scale) {
+        // x : [-1,1] y : [-scale2/scale,scale2/scale]
+        renderSystem.Render_MousePosOnTexture[0] = (renderSystem.Render_MousePos[0] - 0.5) * 2;
+        renderSystem.Render_MousePosOnTexture[1] = (renderSystem.Render_MousePos[1] - 0.5) * 2 * scale2 / scale;
+    }
+    else {
+        // x : [-scale/scale2,scale/scale2] y : [-1,1]
+		renderSystem.Render_MousePosOnTexture[0] = (renderSystem.Render_MousePos[0] - 0.5) * 2 * scale / scale2;
+		renderSystem.Render_MousePosOnTexture[1] = (renderSystem.Render_MousePos[1] - 0.5) * 2;
+	}
+
+
 }
 void Render_qt::updateGLUI() {
     updateStatus();
@@ -195,16 +231,30 @@ void Render_qt::updateGLUI() {
     ui.openGLWidget->update();
     Cursor_X = this->mapFromGlobal(QCursor().pos()).x();
     Cursor_Y = ui.centralWidget->height() - this->mapFromGlobal(QCursor().pos()).y();
+    double oldX = renderSystem.Render_MousePos[0];
+    double oldY = renderSystem.Render_MousePos[1];
+
     renderSystem.Render_MousePos[0] = double(Cursor_X) / ui.centralWidget->width();
     renderSystem.Render_MousePos[1] = double(Cursor_Y) / ui.centralWidget->height();
     renderSystem.Render_MousePosInt[0] = Cursor_X;
     renderSystem.Render_MousePosInt[1] = Cursor_Y;
+
+    if (renderSystem.Render_MousePos[0] != oldX || renderSystem.Render_MousePos[1] != oldY) {
+		renderSystem.appendUpdatedVar(L"System.Renderer.Mouse.Position");
+		renderSystem.appendUpdatedVar(L"System.Renderer.Mouse.PosOnTexture");
+	}
+    
+    int oldMouse[3] = { renderSystem.Render_Mouse[0], renderSystem.Render_Mouse[1], renderSystem.Render_Mouse[2] };
 
     Qt::MouseButtons buttons = QApplication::mouseButtons();
     renderSystem.Render_Mouse[0] = buttons.testFlag(Qt::LeftButton);
     renderSystem.Render_Mouse[1] = buttons.testFlag(Qt::RightButton);
     renderSystem.Render_Mouse[2] = buttons.testFlag(Qt::MiddleButton);
    
+    if (oldMouse[0] != renderSystem.Render_Mouse[0] || oldMouse[1] != renderSystem.Render_Mouse[1] || oldMouse[2] != renderSystem.Render_Mouse[2]) {
+        renderSystem.appendUpdatedVar(L"System.Renderer.Mouse.Button");
+
+    }
     DWORD tick = GetTickCount();
     MouseInTitleBar = this->underMouse() && (Cursor_Y > ui.centralWidget->height() - Main_Exit.rect.h && Cursor_Y <= ui.centralWidget->height() - BorderThickness && Cursor_X > BorderThickness && Cursor_X < ui.centralWidget->width() - BorderThickness);
     if (MouseInTitleBar && !lMouseInTitleBar) {
@@ -220,7 +270,11 @@ void Render_qt::updateGLUI() {
     else {
         TitleBarMove.SetTotalDuration(500);
     }
+    double oldScale = renderSystem.Render_SmoothScale.X();
     renderSystem.Render_SmoothScale.Update(GetTickCount());
+    if (oldScale != renderSystem.Render_SmoothScale.X()) {
+		renderSystem.appendUpdatedVar(L"System.Renderer.Scale");
+	}
     updateVariables();
 
     TitleBarMove.Update(tick);
@@ -278,12 +332,16 @@ bool Render_qt::nativeEvent(const QByteArray& eventType, void* message, long* re
 
 void Render_qt::keyPressEvent(QKeyEvent* e) {
     if (e->key() >= sizeof(renderSystem.Render_KeyBoard) / sizeof(renderSystem.Render_KeyBoard[0])) return;
-	renderSystem.Render_KeyBoard[e->key()] = true;
+	bool old = renderSystem.Render_KeyBoard[e->key()];
+    renderSystem.Render_KeyBoard[e->key()] = true;
+    if(!old) renderSystem.appendUpdatedVar(L"System.Renderer.KeyBoard");
 }
 
 void Render_qt::keyReleaseEvent(QKeyEvent* e) {
     if (e->key() >= sizeof(renderSystem.Render_KeyBoard) / sizeof(renderSystem.Render_KeyBoard[0])) return;
-	renderSystem.Render_KeyBoard[e->key()] = false;
+	bool old = renderSystem.Render_KeyBoard[e->key()];
+    renderSystem.Render_KeyBoard[e->key()] = false;
+    if(old) renderSystem.appendUpdatedVar(L"System.Renderer.KeyBoard");
 }
 
 void Render_qt::mousePressEvent(QMouseEvent* e) {
@@ -389,18 +447,27 @@ void Render_qt::mouseMoveEvent(QMouseEvent* e) {
 
         double scale = renderSystem.Render_SmoothScale.X();
         if (e->buttons() & Qt::RightButton) {
-			renderSystem.camera.move(0, dY * scale, -dX * scale);
-		}
+            renderSystem.camera.move(0, dY * scale, -dX * scale);
+            if (dY != 0 || dX != 0)
+                renderSystem.appendUpdatedVar(L"System.Renderer.Camera.Mat");
+        }
         else if (e->buttons() & Qt::MiddleButton) {
 			renderSystem.camera.move(dY * scale, 0, dX * scale);
-		}
+	        if (dY != 0 || dX != 0)
+				renderSystem.appendUpdatedVar(L"System.Renderer.Camera.Mat");
+        }
         else if (e->buttons() & Qt::LeftButton) {
             renderSystem.camera.moveYaw(dX * 3.14159265358 * 4);
             renderSystem.camera.movePitch(dY * 3.14159265358 * 4);
 
             renderSystem.camera.x_2D -= dX_2D * scale;
             renderSystem.camera.y_2D += dY_2D * scale;
-
+            if (dX != 0 || dY != 0) {
+				renderSystem.appendUpdatedVar(L"System.Renderer.Camera.Mat");
+			    renderSystem.appendUpdatedVar(L"System.Renderer.Camera.Rot");
+                renderSystem.appendUpdatedVar(L"System.Renderer.Camera.YPR");
+                renderSystem.appendUpdatedVar(L"System.Renderer.Camera.XY2D");
+			}
 		}
         else {
 

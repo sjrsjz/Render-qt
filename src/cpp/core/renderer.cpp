@@ -649,7 +649,8 @@ unsigned int RenderSystem::leaveUpdate() {
 	_set_se_translator(sehTranslator);
 	if (frameEnd && !Error) {
 		try {
-			return frameEnd();
+			curr_texture = frameEnd();
+			return curr_texture;
 		}
 		catch (const SEHException& e) {
 			info((L"Ö¡½áÊøº¯ÊýÒì³£\n" + e.getExceptionString()).c_str());
@@ -782,6 +783,11 @@ void _stdcall RenderSystem::getUniform4f(unsigned int this_, unsigned int name, 
 		value[1] = ((RenderSystem*)this_)->Render_MousePos[1];
 		value[2] = ((RenderSystem*)this_)->Render_MousePosInt[0];
 		value[3] = ((RenderSystem*)this_)->Render_MousePosInt[1];
+		return;
+	}
+	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Mouse.PosOnTexture")) {
+		value[0] = ((RenderSystem*)this_)->Render_MousePosOnTexture[0];
+		value[1] = ((RenderSystem*)this_)->Render_MousePosOnTexture[1];
 		return;
 	}
 	if ((std::wstring)(wchar_t*)name == R("System.Renderer.Mouse.Button"))

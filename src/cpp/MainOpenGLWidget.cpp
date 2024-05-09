@@ -322,6 +322,10 @@ void MainOpenGLWidget::PaintUI() {
 void MainOpenGLWidget::DrawScene() {
 	if (renderSystem.Error) return;
 	double ltime = lastTime;
+	for (auto& x : renderSystem.updatedVars) {
+		renderSystem.updateVar(x.c_str());
+	}
+	renderSystem.updatedVars.clear();
 	renderSystem.enterUpdate();
 	double currentTime = QTime::currentTime().msecsSinceStartOfDay() / 1000.0;
 	renderSystem.update(currentTime-ltime);

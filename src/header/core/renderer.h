@@ -276,6 +276,7 @@ private:
 	std::vector<int> ComputePrograms;
 	std::vector<std::wstring> ComputeShadersName;
 	x86Runner runner{};
+	GLuint curr_texture{};
 public:
 	unsigned int computeShader_workgroup_size = 16;
 	Camera camera{};
@@ -284,12 +285,15 @@ public:
 	double Render_Time = 0;
 	double Render_dTime = 0;
 
-	int Render_KeyBoard[1024];
-	int Render_Mouse[3];
-	double Render_MousePos[2];
-	int Render_MousePosInt[2];
+	int Render_KeyBoard[1024]{};
+	int Render_Mouse[3]{};
+	double Render_MousePos[2]{};
+	int Render_MousePosInt[2]{};
+	double Render_MousePosOnTexture[2]{};
 
-	SmoothMove Render_SmoothScale;
+	std::unordered_set<std::wstring> updatedVars;
+
+	SmoothMove Render_SmoothScale{};
 
 
 	std::vector<std::wstring> Render_CmdLineArgs;
@@ -305,6 +309,10 @@ public:
 	void info(const wchar_t* info);
 	bool Error{};
 	std::wstring getShaderWithoutInclude(std::wstring cs, std::unordered_set<std::wstring>& map);
+	GLuint getCurrentTexture() { return curr_texture; }
+	void appendUpdatedVar(const wchar_t* name) {
+		updatedVars.insert(name);
+	}
 	static unsigned int _stdcall functions(unsigned int this_, unsigned int func);
 	static void _stdcall callbacks(unsigned int this_, unsigned int name, unsigned int func);
 	static unsigned int _stdcall image1D(unsigned int this_, unsigned int width);
